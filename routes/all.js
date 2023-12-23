@@ -17,11 +17,7 @@ const {
   getContact,
 } = require("../controllers/contacts");
 
-const {
-  createBill,
-  getBill,
-  getBillsByUserId,
-} = require("../controllers/bills");
+const { createBill, getBillsByClientId } = require("../controllers/bills");
 
 /**
  * @swagger
@@ -163,11 +159,84 @@ router.post("/clients", createClient);
  *
  */
 router.get("/clients/:id", getClientsByUser);
+/**
+ * @swagger
+ * /bills:
+ *   post:
+ *     summary: Create a bill
+ *     description: Create a bill
+ *     tags:
+ *       - Bills
+ *     parameters:
+ *       - in: body
+ *         name: amount
+ *         required: true
+ *         description: amount of bill.
+ *         schema:
+ *           type: string
+ *       - in: body
+ *         name: dueDate
+ *         required: true
+ *         description: dueDate
+ *         schema:
+ *           type: string
+ *        - in: body
+ *         name: status
+ *         required: true
+ *         description: status
+ *         schema:
+ *           type: string
+ *        - in: body
+ *         name: clientId
+ *         required: true
+ *         description: clientId
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Successful response
+ *         content:
+ *           application/json:
+ *             schema:
+ *               Users
+ *       400:
+ *         description: Missing parameters
+ *       500:
+ *         description: Internal error
+ *
+ */
+router.post("/bills", createBill);
+/**
+ * @swagger
+ * /bills/:id:
+ *   get:
+ *     summary: Get bills from client
+ *     description:  Get bills from client
+ *     tags:
+ *       - Clients
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: The ID of the user.
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Successful response
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/models/Bills'
+ *       404:
+ *         description: Acceses not found
+ *
+ */
+router.get("/bills/:id", getBillsByClientId);
+
 router.get("/clients", getClients);
 router.post("/contacts", createContact);
 router.get("/contacts/:id", getContacts);
 router.get("/contacts", getContact);
-router.post("/bills", createBill);
-router.get("/bills/:id", getBillsByUserId);
 
 module.exports = router;

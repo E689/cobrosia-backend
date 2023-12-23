@@ -19,6 +19,8 @@ const {
 
 const { createBill, getBillsByClientId } = require("../controllers/bills");
 
+const { sendMails } = require("../controllers/mail");
+
 /**
  * @swagger
  * /users/register:
@@ -234,6 +236,8 @@ router.post("/bills", createBill);
  *
  */
 router.get("/bills/:id", getBillsByClientId);
+
+router.get("/mail", sendMails);
 
 router.get("/clients", getClients);
 router.post("/contacts", createContact);

@@ -1,4 +1,5 @@
 const Clients = require("../models/clients");
+const Contacts = require("../models/contacts");
 
 exports.createClient = (req, res) => {
   const { clientName, userId, contactName, contactlastName, phone, email } =
@@ -55,21 +56,27 @@ exports.createClient = (req, res) => {
     });
 };
 
-exports.getClientsByUser = (req, res) => {
-  const id = req.params.id;
-  Clients.find({ user: id })
-    .then((clients) => {
-      return res.status(200).json({
-        clients,
-        message: "Clients from user retrieved",
-      });
-    })
-    .catch((error) => {
-      return res.status(500).json({
-        error,
-        message: "Error finding Client",
-      });
+exports.getClientsByUser = async (req, res) => {
+  try {
+    const id = req.params.id;
+    const clients = await Clients.find({ user: id });
+    const clientsWithContacts = await Promise.all(
+      clients.map(async (clientUnique) => {
+        const contacts = await Contacts.find({ client: clientUnique._id });
+        return { ...clientUnique._doc, contacts };
+      })
+    );
+
+    return res.status(200).json({
+      clients: clientsWithContacts,
+      message: "Clients from user retrieved with contacts",
     });
+  } catch (error) {
+    return res.status(500).json({
+      error,
+      message: "Error finding Client",
+    });
+  }
 };
 
 exports.getClient = (req, res) => {

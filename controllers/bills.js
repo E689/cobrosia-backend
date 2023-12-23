@@ -38,38 +38,42 @@ exports.getBill = (req, res) => {};
 
 //by user revisar esta mal.
 exports.getBillsByUserId = (req, res) => {
-  const userId = req.params.userId;
+  const userId = req.params.id;
+
   User.findById(userId)
+    .populate({
+      path: "client",
+      model: "clients",
+      populate: {
+        path: "bills",
+        model: "bills",
+      },
+    })
+    .exec()
     .then((user) => {
       if (!user) {
         return res.status(404).json({
-          message: "User not found",
+          message: "Users not found",
         });
       }
-      const clientIds = user.clients.map((client) => client._id);
 
-      Bills.find({ client: { $in: clientIds } })
-        .then((bills) => {
-          return res.status(200).json({
-            bills,
-            message: "Bills from all clients retrieved",
-          });
-        })
-        .catch((error) => {
-          return res.status(500).json({
-            error,
-            message: "Error finding bills",
-          });
-        });
+      const allBills = user.clients.reduce((accumulator, client) => {
+        return accumulator.concat(client.bills);
+      }, []);
+
+      return res.status(200).json({
+        bills: allBills,
+        message: "Bills from all clients retrieved",
+      });
     })
     .catch((error) => {
       return res.status(500).json({
         error,
-        message: "Error finding user",
+        message: "Error finding user and associated bills",
       });
     });
 };
-//by client
+
 exports.getBillsByClientId = (req, res) => {
   const id = req.params.id;
   Bills.find({ client: id })

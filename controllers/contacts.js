@@ -2,7 +2,7 @@ const Contacs = require("../models/contacts");
 
 exports.createContact = (req, res) => {
   const { name, lastName, phone, email, clientId } = req.body;
-  if (!name || !userId || !lastName || !phone || !email || !clientId) {
+  if (!name || !lastName || !phone || !email || !clientId) {
     return res.status(400).json({
       message:
         "Missing parameters. Please enter name, lastName, phone, email, clientId",

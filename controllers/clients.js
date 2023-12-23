@@ -8,7 +8,7 @@ exports.createClient = (req, res) => {
     });
   }
 
-  const newClient = new Clients({ email, name, password });
+  const newClient = new Clients({ name, user: userId });
 
   newClient
     .save()

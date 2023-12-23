@@ -3,7 +3,8 @@ const cors = require("cors");
 const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
 require("dotenv").config();
-
+const swaggerUi = require("swagger-ui-express");
+const specs = require("./swagger");
 //db
 mongoose
   .connect(process.env.DATABASE, {})
@@ -19,6 +20,7 @@ const allRoutes = require("./routes/all");
 app.use(bodyParser.json());
 app.use(cors());
 
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(specs));
 //app  middlewares
 app.use("/api", allRoutes);
 

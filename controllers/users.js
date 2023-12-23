@@ -1,5 +1,47 @@
 const Users = require("../models/users");
 
+/**
+ * @swagger
+ * /users/register:
+ *   post:
+ *     summary: Create user
+ *     description: Register a new user to the db
+ *     tags:
+ *       - Users
+ *     parameters:
+ *       - in: body
+ *         name: name
+ *         required: true
+ *         description: name of new user.
+ *         schema:
+ *           type: string
+ *       - in: body
+ *         name: email
+ *         required: true
+ *         description: unique email of new user.
+ *         schema:
+ *           type: string
+ *       - in: body
+ *         name: password
+ *         required: true
+ *         description: plain password.
+ *         schema:
+ *           type: string
+ *     responses:
+ *       201:
+ *         description: Successful response
+ *         content:
+ *           application/json:
+ *             schema:
+ *               Users
+ *       400:
+ *         description: Missing parameters
+ *       409:
+ *         description: Duplicated email
+ *       500:
+ *         description: Internal error
+ *
+ */
 exports.createUser = (req, res) => {
   const { email, name, password } = req.body;
   if (!email || !name || !password) {
@@ -7,7 +49,40 @@ exports.createUser = (req, res) => {
       message: "Missing parameters. Please enter email, name, and password.",
     });
   }
-
+  /**
+   * @swagger
+   * /users/login:
+   *   post:
+   *     summary: Log in user
+   *     description: Verify and log a user.
+   *     tags:
+   *       - Users
+   *     parameters:
+   *       - in: body
+   *         name: email
+   *         required: true
+   *         description: email of user.
+   *         schema:
+   *           type: string
+   *       - in: body
+   *         name: password
+   *         required: true
+   *         description: plain password to verify with save hash password.
+   *         schema:
+   *           type: string
+   *     responses:
+   *       200:
+   *         description: Successful response
+   *         content:
+   *           application/json:
+   *             schema:
+   *               Users
+   *       400:
+   *         description: Missing parameters
+   *       500:
+   *         description: Internal error
+   *
+   */
   Users.findOne({ email })
     .then((existingUser) => {
       if (existingUser) {

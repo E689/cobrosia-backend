@@ -159,6 +159,7 @@ router.post("/clients", createClient);
  *
  */
 router.get("/clients/:id", getClientsByUser);
+
 /**
  * @swagger
  * /bills:
@@ -213,7 +214,7 @@ router.post("/bills", createBill);
  *     summary: Get bills from client
  *     description:  Get bills from client
  *     tags:
- *       - Clients
+ *       - Bills
  *     parameters:
  *       - in: path
  *         name: id

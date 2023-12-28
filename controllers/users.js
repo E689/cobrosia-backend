@@ -44,7 +44,8 @@ exports.createUser = (req, res) => {
 
 exports.logUser = (req, res) => {
   const { email, password } = req.body;
-  console.log(req.body.username);
+  console.log(JSON.stringify(req.body.username));
+  console.log(req.body.password);
   Users.findOne({ email })
     .then((foundUser) => {
       if (!foundUser) {

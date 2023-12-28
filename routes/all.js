@@ -17,7 +17,7 @@ const {
   getContact,
 } = require("../controllers/contacts");
 
-const { createBill, getBillsByClientId } = require("../controllers/bills");
+const { createBill, getBillsByUserId } = require("../controllers/bills");
 
 const { sendMails } = require("../controllers/mail");
 
@@ -109,19 +109,43 @@ router.post("/users/login", logUser);
  *       - Clients
  *     parameters:
  *       - in: body
- *         name: email
+ *         name: clientName
  *         required: true
- *         description: email of user.
+ *         description: Name of client.
  *         schema:
  *           type: string
  *       - in: body
- *         name: password
+ *         name: contactName
  *         required: true
- *         description: plain password to verify with save hash password.
+ *         description: Name of contact
+ *         schema:
+ *           type: string
+ *       - in: body
+ *         name: contactlastName
+ *         required: true
+ *         description: Lastname of contact
+ *         schema:
+ *           type: string
+ *       - in: body
+ *         name: phone
+ *         required: true
+ *         description: phone of contact
+ *         schema:
+ *           type: string
+ *       - in: body
+ *         name: email
+ *         required: true
+ *         description: email of contact
+ *         schema:
+ *           type: string
+ *       - in: body
+ *         name: userId
+ *         required: true
+ *         description: userId of the user creating the client
  *         schema:
  *           type: string
  *     responses:
- *       200:
+ *       201:
  *         description: Successful response
  *         content:
  *           application/json:
@@ -138,8 +162,8 @@ router.post("/clients", createClient);
  * @swagger
  * /clients/:id:
  *   get:
- *     summary: Get clients by user
- *     description: Get all clients by user
+ *     summary: Get clients from user
+ *     description:  Get clients from user
  *     tags:
  *       - Clients
  *     parameters:
@@ -155,19 +179,17 @@ router.post("/clients", createClient);
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/models/Contacts'
- *       404:
- *         description: Acceses not found
- *
+ *               $ref: '#/models/Clients'
+ *       500:
+ *         description: Internal error
  */
 router.get("/clients/:id", getClientsByUser);
-
 /**
  * @swagger
  * /bills:
  *   post:
- *     summary: Create a bill
- *     description: Create a bill
+ *     summary: Create a client with contact
+ *     description: Create a client and set its contact
  *     tags:
  *       - Bills
  *     parameters:
@@ -180,23 +202,23 @@ router.get("/clients/:id", getClientsByUser);
  *       - in: body
  *         name: dueDate
  *         required: true
- *         description: dueDate
+ *         description: due date of bill
  *         schema:
  *           type: string
- *        - in: body
+ *       - in: body
  *         name: status
  *         required: true
- *         description: status
+ *         description: status of bill
  *         schema:
  *           type: string
- *        - in: body
+ *       - in: body
  *         name: clientId
  *         required: true
- *         description: clientId
+ *         description: clientId of client that owns the bill
  *         schema:
  *           type: string
  *     responses:
- *       200:
+ *       201:
  *         description: Successful response
  *         content:
  *           application/json:
@@ -213,8 +235,8 @@ router.post("/bills", createBill);
  * @swagger
  * /bills/:id:
  *   get:
- *     summary: Get bills from client
- *     description:  Get bills from client
+ *     summary: Get bills from user
+ *     description:  Get bills from user
  *     tags:
  *       - Bills
  *     parameters:
@@ -231,17 +253,15 @@ router.post("/bills", createBill);
  *           application/json:
  *             schema:
  *               $ref: '#/models/Bills'
- *       404:
- *         description: Acceses not found
- *
+ *       500:
+ *         description: Internal error
  */
-router.get("/bills/:id", getBillsByClientId);
+router.get("/bills/:id", getBillsByUserId);
 
-router.get("/mail", sendMails);
-
-router.get("/clients", getClients);
-router.post("/contacts", createContact);
-router.get("/contacts/:id", getContacts);
-router.get("/contacts", getContact);
+// router.get("/mail", sendMails);
+// router.get("/clients", getClients);
+// router.post("/contacts", createContact);
+// router.get("/contacts/:id", getContacts);
+// router.get("/contacts", getContact);
 
 module.exports = router;

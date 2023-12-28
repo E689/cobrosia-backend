@@ -18,34 +18,22 @@ exports.createClient = (req, res) => {
     });
   }
 
-  const newClient = new Clients({ name: clientName, user: userId });
+  const newClient = new Clients({
+    clientName,
+    contactName,
+    contactlastName,
+    phone,
+    email,
+    user: userId,
+  });
 
   newClient
     .save()
     .then((newClient) => {
-      const newContact = new Contacs({
-        name: contactName,
-        lastName: contactlastName,
-        phone,
-        email,
-        client: newClient._id,
+      return res.status(201).json({
+        message: "Client created",
+        newClient,
       });
-
-      newContact
-        .save()
-        .then((newContact) => {
-          return res.status(201).json({
-            message: "Client created",
-            client: { name: newContact.name, id: newContact._id },
-          });
-        })
-        .catch((error) => {
-          console.log(error);
-          return res.status(500).json({
-            error,
-            message: "Error creating contact",
-          });
-        });
     })
     .catch((error) => {
       console.log(error);
@@ -60,15 +48,9 @@ exports.getClientsByUser = async (req, res) => {
   try {
     const id = req.params.id;
     const clients = await Clients.find({ user: id });
-    const clientsWithContacts = await Promise.all(
-      clients.map(async (clientUnique) => {
-        const contacts = await Contacts.find({ client: clientUnique._id });
-        return { ...clientUnique._doc, contacts };
-      })
-    );
 
     return res.status(200).json({
-      clients: clientsWithContacts,
+      clients,
       message: "Clients from user retrieved with contacts",
     });
   } catch (error) {

@@ -4,7 +4,19 @@ const Users = require("./users");
 
 const clientsSchema = new mongoose.Schema(
   {
-    name: {
+    clientName: {
+      type: String,
+    },
+    contactName: {
+      type: String,
+    },
+    contactlastName: {
+      type: String,
+    },
+    phone: {
+      type: String,
+    },
+    email: {
       type: String,
     },
     user: { type: ObjectId, ref: "Users" },

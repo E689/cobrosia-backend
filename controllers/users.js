@@ -44,15 +44,19 @@ exports.createUser = (req, res) => {
 
 exports.logUser = (req, res) => {
   const { email, password } = req.body;
+  console.log(req.body);
+  console.log(JSON.parse(req.body));
   Users.findOne({ email })
     .then((foundUser) => {
       if (!foundUser) {
+        console.log("user not found");
         return res.status(400).json({
           error: "User with that email does not exist. Please register first.",
         });
       }
       // authenticate
       if (!foundUser.authenticate(password)) {
+        console.log("worng password");
         return res.status(400).json({
           error: "Incorrect password",
         });
@@ -60,7 +64,7 @@ exports.logUser = (req, res) => {
 
       // here i would generate a token for the user
       // and send it back
-
+      console.log("sign in user", foundUser);
       return res.status(200).json({
         message: "User logged in succesfully",
         user: { name: foundUser.name, id: foundUser._id },

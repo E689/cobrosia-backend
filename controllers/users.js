@@ -67,7 +67,7 @@ exports.logUser = (req, res) => {
       console.log("sign in user", foundUser);
       return res.status(200).json({
         message: "User logged in succesfully",
-        user: { name: foundUser.name, id: foundUser._id },
+        user: { name: foundUser.name, id: foundUser._id.toString() },
       });
     })
     .catch((err) => {

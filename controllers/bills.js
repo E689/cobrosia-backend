@@ -44,7 +44,7 @@ exports.createBill = (req, res) => {
           });
 
           return res.status(200).json({
-            message: "messages for created bills sent",
+            message: "messages for bills sent",
             bills: bills,
           });
         })
@@ -55,11 +55,6 @@ exports.createBill = (req, res) => {
             message: "Error messaging for bills bills",
           });
         });
-
-      return res.status(201).json({
-        message: "Bill created",
-        bill: newBill,
-      });
     })
     .catch((error) => {
       console.log(error);

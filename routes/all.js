@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+const OpenAI = require("openai");
 
 //controllers
 const { createUser, logUser } = require("../controllers/users");
@@ -366,9 +367,28 @@ router.put("/clients/:id", updateClient);
  */
 router.delete("/clients/:id", deleteClient);
 
+const funcionCatchy = async (firstMessage) => {
+  const openai = new OpenAI({
+    apiKey: "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",
+  });
+  const openAiResponse = await openai.chat.completions.create({
+    messages: [
+      {
+        role: "system",
+        content: `responde a este mensaje naturalmente como si yo fuera tu: ${firstMessage}`,
+      },
+    ],
+    model: "gpt-3.5-turbo",
+  });
+
+  const generatedText = openAiResponse.choices[0].message.content;
+  return generatedText;
+};
+
 router.post("/mensaje", (req, res) => {
   const { contactNumber, firstMessage, lastMessage } = req.body;
 
+  const respuesta = funcionCatchy(firstMessage);
   fetch("https://api.ultramsg.com/instance68922/messages/chat", {
     method: "POST",
     headers: {
@@ -377,7 +397,7 @@ router.post("/mensaje", (req, res) => {
     body: JSON.stringify({
       token: "t1byq90j0ln61sw9",
       to: "+50248274591",
-      body: "papapapapau paupau pau pau papapapa paupaupaupau paupau paupau papapau pa paupau papau",
+      body: respuesta,
     }),
   })
     .then((response) => response.json())

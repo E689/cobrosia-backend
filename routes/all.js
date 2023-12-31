@@ -4,6 +4,7 @@ const OpenAI = require("openai");
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_KEY,
 });
+const Bills = require("../models/bills");
 //controllers
 const { createUser, logUser } = require("../controllers/users");
 
@@ -21,6 +22,7 @@ const {
   updateBill,
   getLogByBillId,
   revisarBills,
+  getLogByPhone,
 } = require("../controllers/bills");
 const { sendMails } = require("../controllers/mail");
 
@@ -397,23 +399,6 @@ router.delete("/clients/:id", deleteClient);
  */
 router.get("/bills/log/:id", getLogByBillId);
 
-router.get("/log", revisarBills);
-
-const classifyMessage = async (msg) => {
-  const openAiResponse = await openai.chat.completions.create({
-    messages: [
-      {
-        role: "system",
-        content: `usted es un cobrador. Le voy a enviar un log de conversacion que hemos tenido con un usuario. si el ultimo mensaje es de nosotros (gpt) redactar un mensaje pertinente a la situacion si aun no nos ha pagado o si ya pago. Si la ultima respuesta es el usuario interpretar si el usuario tiene intension de pagar a tiempo, si el usuario quiere cambiar de fecha de pago o si es necesaria intervencion humana para resolver la respuesta.Si el mensaje no tiene ninguna relacion con el cobro, de forma respetuosa y urgente recordarle el monto y la fecha que debio pagar y las consecuencias si no lo hace.`,
-      },
-      { role: "user", content: msg },
-    ],
-    model: "gpt-3.5-turbo",
-  });
-  const generatedText = openAiResponse.choices[0].message.content;
-  return generatedText;
-};
-
 const funcionCatchy = async (firstMessage) => {
   const openAiResponse = await openai.chat.completions.create({
     messages: [
@@ -430,46 +415,155 @@ const funcionCatchy = async (firstMessage) => {
   return generatedText;
 };
 
-router.post("/mensaje", async (req, res) => {
-  const { contactNumber, firstMessage, lastMessage } = req.body;
-  console.log("Last message", lastMessage);
-  console.log("contact message", lastMessage);
+router.get("/log", (req, res) => {
+  const user = "GPT";
+  Bills.find({ status: { $ne: "collected" } })
+    .populate("client")
+    .then((bills) => {
+      bills.forEach(async (bill) => {
+        const logEntry = {
+          user: user,
+          msg: `Le recuerdo ${bill.client.clientName} que me pague la factura ${bill.billId} que vale ${bill.amount}`,
+        };
+        fetch("https://api.ultramsg.com/instance68922/messages/chat", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            token: "t1byq90j0ln61sw9",
+            to: `+502${bill.client.phone}`,
+            body: `${logEntry.user} - ${logEntry.msg}`,
+          }),
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            console.log(data);
+          })
+          .catch((error) => {
+            console.error("Fetch error:", error);
+          });
+        await Bills.updateOne({ _id: bill._id }, { $push: { log: logEntry } });
+      });
 
-  const respuesta = await funcionCatchy(lastMessage);
-  console.log("la respuesta es", respuesta);
-  fetch("https://api.ultramsg.com/instance68922/messages/chat", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      token: "t1byq90j0ln61sw9",
-      to: "+50248274591",
-      body: respuesta,
-    }),
-  })
-    .then((response) => response.json())
-    .then((data) => {
-      console.log(data);
       return res.status(200).json({
-        message: `mensaje enviado`,
-        data,
+        message: "messages for bills sent",
+        bills: bills,
       });
     })
     .catch((error) => {
-      console.error("Fetch error:", error);
-      return res.status(200).json({
-        message: `fallo exitosamente`,
+      console.log(error);
+      return res.status(500).json({
         error,
+        message: "Error messaging for bills bills",
       });
     });
 });
 
+const classifyMessage = async (msg) => {
+  const openAiResponse = await openai.chat.completions.create({
+    messages: [
+      {
+        role: "system",
+        content: `usted es un cobrador. Le voy a enviar un log de conversacion que hemos tenido con un usuario y genereme la respuesta a enviarle para que nos pague pronto.`,
+      },
+      { role: "user", content: msg },
+    ],
+    model: "gpt-3.5-turbo",
+  });
+  const generatedText = openAiResponse.choices[0].message.content;
+  return generatedText;
+};
+
+const getLogByPhone = (phone, msg) => {
+  Clients.findOne({ phone })
+    .then((foundClient) => {
+      Bills.findOne({ client: foundClient._id }).then(async (bill) => {
+        const logEntry = {
+          user: "user",
+          msg,
+        };
+
+        const respuesta = await classifyMessage(msg);
+
+        fetch("https://api.ultramsg.com/instance68922/messages/chat", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            token: "t1byq90j0ln61sw9",
+            to: `+502${phone}`,
+            body: `${logEntry.user} - Estimado don cerote ${respuesta}`,
+          }),
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            console.log(data);
+          })
+          .catch((error) => {
+            console.error("Fetch error:", error);
+          });
+
+        const logEntry2 = {
+          user: "GPT",
+          respuesta,
+        };
+
+        Bills.updateOne(
+          { _id: bill._id },
+          { $push: { log: [logEntry, logEntry2] } }
+        ).then((bill) => {
+          return;
+        });
+      });
+    })
+    .catch((error) => {
+      console.log(error);
+      return;
+    });
+};
+
+router.post("/mensaje", async (req, res) => {
+  const { contactNumber, firstMessage, lastMessage } = req.body;
+  console.log("contact number", contactNumber);
+  getLogByPhone(contactNumber.slice(3), lastMessage);
+
+  // const respuesta = await funcionCatchy(lastMessage);
+  // console.log("la respuesta es", respuesta);
+  // fetch("https://api.ultramsg.com/instance68922/messages/chat", {
+  //   method: "POST",
+  //   headers: {
+  //     "Content-Type": "application/json",
+  //   },
+  //   body: JSON.stringify({
+  //     token: "t1byq90j0ln61sw9",
+  //     to: "+50248274591",
+  //     body: respuesta,
+  //   }),
+  // })
+  //   .then((response) => response.json())
+  //   .then((data) => {
+  //     console.log(data);
+  //     return res.status(200).json({
+  //       message: `mensaje enviado`,
+  //       data,
+  //     });
+  //   })
+  //   .catch((error) => {
+  //     console.error("Fetch error:", error);
+  //     return res.status(200).json({
+  //       message: `fallo exitosamente`,
+  //       error,
+  //     });
+  //   });
+});
+
 router.post("/class", async (req, res) => {
-  const { text } = req.body;
+  const { text, phone } = req.body;
   const respuesta = await classifyMessage(text);
   return res.status(200).json({
-    message: `la intencion de pago es ${respuesta}`,
+    message: `${respuesta}`,
   });
 });
 

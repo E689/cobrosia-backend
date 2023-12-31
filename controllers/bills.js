@@ -1,10 +1,9 @@
 const Bills = require("../models/bills");
-const User = require("../models/users");
 const Clients = require("../models/clients");
 
 exports.createBill = (req, res) => {
-  const { amount, dueDate, status, clientId } = req.body;
-  if (!amount || !dueDate || !status || !clientId) {
+  const { amount, dueDate, status, clientId, billId } = req.body;
+  if (!amount || !dueDate || !status || !clientId || !billId) {
     return res.status(400).json({
       message:
         "Missing parameters. Please enter amount, dueDate, status, clientId",
@@ -16,6 +15,7 @@ exports.createBill = (req, res) => {
     dueDate,
     status,
     client: clientId,
+    billId,
   });
 
   newBill
@@ -23,7 +23,7 @@ exports.createBill = (req, res) => {
     .then((newBill) => {
       return res.status(201).json({
         message: "Bill created",
-        bill: { name: newBill.name, id: newBill._id },
+        bill: newBill,
       });
     })
     .catch((error) => {
@@ -37,13 +37,15 @@ exports.createBill = (req, res) => {
 
 exports.getBill = (req, res) => {};
 
-//by user revisar esta mal.
 exports.getBillsByUserId = (req, res) => {
   const userId = req.params.id;
   Clients.find({ user: userId })
     .then((clients) => {
       const clientIds = clients.map((client) => client._id);
-      return Bills.find({ client: { $in: clientIds } });
+      return Bills.find({ client: { $in: clientIds } }).populate(
+        "client",
+        "clientName"
+      );
     })
     .then((bills) => {
       return res.status(200).json({
@@ -72,6 +74,34 @@ exports.getBillsByClientId = (req, res) => {
       return res.status(500).json({
         error,
         message: "Error finding bill",
+      });
+    });
+};
+
+exports.deleteBill = (req, res) => {
+  const billId = req.params.id;
+  if (!billId) {
+    return res.status(400).json({
+      message: "Missing parameter. Please provide billId.",
+    });
+  }
+  Bills.findByIdAndDelete(billId)
+    .then((deletedBill) => {
+      if (!deletedBill) {
+        return res.status(404).json({
+          message: "Bill not found",
+        });
+      }
+      return res.status(200).json({
+        message: "Bill deleted",
+        deletedBill,
+      });
+    })
+    .catch((error) => {
+      console.log(error);
+      return res.status(500).json({
+        error,
+        message: "Error deleting bill",
       });
     });
 };

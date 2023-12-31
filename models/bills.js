@@ -1,9 +1,11 @@
 const mongoose = require("mongoose");
 const { ObjectId } = mongoose.Schema;
-const Clients = require("./clients");
 
 const billsSchema = new mongoose.Schema(
   {
+    billId: {
+      type: String,
+    },
     amount: {
       type: String,
     },

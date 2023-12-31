@@ -6,19 +6,16 @@ const { createUser, logUser } = require("../controllers/users");
 
 const {
   createClient,
-  getClient,
-  getClients,
+  updateClient,
+  deleteClient,
   getClientsByUser,
 } = require("../controllers/clients");
 
 const {
-  createContact,
-  getContacts,
-  getContact,
-} = require("../controllers/contacts");
-
-const { createBill, getBillsByUserId } = require("../controllers/bills");
-
+  createBill,
+  getBillsByUserId,
+  deleteBill,
+} = require("../controllers/bills");
 const { sendMails } = require("../controllers/mail");
 
 /**
@@ -217,6 +214,12 @@ router.get("/clients/:id", getClientsByUser);
  *         description: clientId of client that owns the bill
  *         schema:
  *           type: string
+ *       - in: body
+ *         name: billId
+ *         required: true
+ *         description: id of bill
+ *         schema:
+ *           type: string
  *     responses:
  *       201:
  *         description: Successful response
@@ -257,11 +260,108 @@ router.post("/bills", createBill);
  *         description: Internal error
  */
 router.get("/bills/:id", getBillsByUserId);
-
-// router.get("/mail", sendMails);
-// router.get("/clients", getClients);
-// router.post("/contacts", createContact);
-// router.get("/contacts/:id", getContacts);
-// router.get("/contacts", getContact);
-
+/**
+ * @swagger
+ * /bills/:id:
+ *   delete:
+ *     summary: delete bill
+ *     description:  delete bill
+ *     tags:
+ *       - Bills
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: The ID of the bill.
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Successful response
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/models/Bills'
+ *       500:
+ *         description: Internal error
+ */
+router.delete("/bills/:id", deleteBill);
+/**
+ * @swagger
+ * /bills/:id:
+ *   put:
+ *     summary: update bill
+ *     description:  update bill
+ *     tags:
+ *       - Bills
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: The ID of the bill.
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Successful response
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/models/Bills'
+ *       500:
+ *         description: Internal error
+ */
+router.put("/bills/:id", () => {});
+/**
+ * @swagger
+ * /clients/:id:
+ *   put:
+ *     summary: edit client
+ *     description:  edit client
+ *     tags:
+ *       - Clients
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: The ID of the client.
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Successful response
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/models/Clients'
+ *       500:
+ *         description: Internal error
+ */
+router.put("/clients/:id", updateClient);
+/**
+ * @swagger
+ * /clients/:id:
+ *   delete:
+ *     summary: delete client
+ *     description: delete client
+ *     tags:
+ *       - Clients
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: The ID of the user.
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Successful response
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/models/Clients'
+ *       500:
+ *         description: Internal error
+ */
+router.delete("/clients/:id", deleteClient);
 module.exports = router;

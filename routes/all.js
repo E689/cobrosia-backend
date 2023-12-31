@@ -23,7 +23,6 @@ const {
   updateBill,
   getLogByBillId,
   revisarBills,
-  getLogByPhone,
 } = require("../controllers/bills");
 const { sendMails } = require("../controllers/mail");
 

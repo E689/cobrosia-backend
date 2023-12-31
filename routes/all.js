@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const OpenAI = require("openai");
 const openai = new OpenAI({
-  apiKey: "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",
+  apiKey: process.env.OPENAI_KEY,
 });
 //controllers
 const { createUser, logUser } = require("../controllers/users");

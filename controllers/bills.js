@@ -28,6 +28,34 @@ exports.createBill = (req, res) => {
   newBill
     .save()
     .then((newBill) => {
+      const user = "GPT";
+      Bills.find({ status: { $ne: "collected" } })
+        .populate("client")
+        .then((bills) => {
+          bills.forEach(async (bill) => {
+            const logEntry = {
+              user: user,
+              msg: `Le recuerdo ${bill.client.clientName} que me pague la factura ${bill.billId} que vale ${bill.amount}`,
+            };
+            await Bills.updateOne(
+              { _id: bill._id },
+              { $push: { log: logEntry } }
+            );
+          });
+
+          return res.status(200).json({
+            message: "messages for created bills sent",
+            bills: bills,
+          });
+        })
+        .catch((error) => {
+          console.log(error);
+          return res.status(500).json({
+            error,
+            message: "Error messaging for bills bills",
+          });
+        });
+
       return res.status(201).json({
         message: "Bill created",
         bill: newBill,

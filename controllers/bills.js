@@ -45,7 +45,7 @@ exports.createBill = (req, res) => {
               body: JSON.stringify({
                 token: "t1byq90j0ln61sw9",
                 to: `+502${bill.client.phone}`,
-                body: `${logEntry.user} - ${logEntry.msg}`,
+                body: `${logEntry.msg}`,
               }),
             })
               .then((response) => response.json())

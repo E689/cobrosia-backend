@@ -465,7 +465,7 @@ const classifyMessage = async (msg) => {
     messages: [
       {
         role: "system",
-        content: `usted es un cobrador. Le voy a enviar un log de conversacion que hemos tenido con un usuario y genereme la respuesta a enviarle para que nos pague pronto. maximo de respuesta 150 caracteres.`,
+        content: `usted es un cobrador. Le voy a enviar un log de conversacion que hemos tenido con un usuario y genereme la respuesta a enviarle para que nos pague pronto. maximo de respuesta 250 caracteres.`,
       },
       { role: "user", content: msg },
     ],
@@ -494,7 +494,7 @@ const getLogByPhone = (phone, msg) => {
           body: JSON.stringify({
             token: "t1byq90j0ln61sw9",
             to: `+502${phone}`,
-            body: `${logEntry.user} - Estimado don cerote ${respuesta}`,
+            body: `${respuesta}`,
           }),
         })
           .then((response) => response.json())

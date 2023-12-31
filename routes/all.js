@@ -507,7 +507,7 @@ const getLogByPhone = (phone, msg) => {
 
         const logEntry2 = {
           user: "GPT",
-          respuesta,
+          msg: respuesta,
         };
 
         Bills.updateOne(

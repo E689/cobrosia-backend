@@ -37,6 +37,24 @@ exports.createBill = (req, res) => {
               user: user,
               msg: `Le recuerdo ${bill.client.clientName} que me pague la factura ${bill.billId} que vale ${bill.amount}`,
             };
+            fetch("https://api.ultramsg.com/instance68922/messages/chat", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                token: "t1byq90j0ln61sw9",
+                to: `+502${bill.client.phone}`,
+                body: `${logEntry.user} - ${logEntry.msg}`,
+              }),
+            })
+              .then((response) => response.json())
+              .then((data) => {
+                console.log(data);
+              })
+              .catch((error) => {
+                console.error("Fetch error:", error);
+              });
             await Bills.updateOne(
               { _id: bill._id },
               { $push: { log: logEntry } }

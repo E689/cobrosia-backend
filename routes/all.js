@@ -369,7 +369,7 @@ router.delete("/clients/:id", deleteClient);
 
 const funcionCatchy = async (firstMessage) => {
   const openai = new OpenAI({
-    apiKey: "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",
+    apiKey: "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",
   });
   const openAiResponse = await openai.chat.completions.create({
     messages: [
@@ -380,15 +380,17 @@ const funcionCatchy = async (firstMessage) => {
     ],
     model: "gpt-3.5-turbo",
   });
-
+  console.log("response del openAI");
+  console.log(openAiResponse);
   const generatedText = openAiResponse.choices[0].message.content;
   return generatedText;
 };
 
 router.post("/mensaje", (req, res) => {
   const { contactNumber, firstMessage, lastMessage } = req.body;
-
-  const respuesta = funcionCatchy(firstMessage);
+  console.log("Last message", lastMessage);
+  const respuesta = funcionCatchy(lastMessage);
+  console.log("la respuesta es", respuesta);
   fetch("https://api.ultramsg.com/instance68922/messages/chat", {
     method: "POST",
     headers: {

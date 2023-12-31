@@ -397,7 +397,7 @@ router.delete("/clients/:id", deleteClient);
  */
 router.get("/bills/log/:id", getLogByBillId);
 
-router.get("/bills/log/send", revisarBills);
+router.get("/log", revisarBills);
 
 const funcionCatchy = async (firstMessage) => {
   const openAiResponse = await openai.chat.completions.create({

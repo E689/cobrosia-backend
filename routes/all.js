@@ -480,7 +480,7 @@ const getLogByPhone = (phone, msg) => {
     .then((foundClient) => {
       Bills.findOne({ client: foundClient._id }).then(async (bill) => {
         const logEntry = {
-          user: "user",
+          user: foundClient.contactName,
           msg,
         };
 

@@ -465,7 +465,7 @@ const classifyMessage = async (msg) => {
     messages: [
       {
         role: "system",
-        content: `usted es un cobrador. Le voy a enviar una respuesta de un usuario ante un recordatorio de pago. respondale pidiendole que page amablemente`,
+        content: `usted es un cobrador. Le voy a enviar una respuesta de un usuario ante un recordatorio de pago. respondale pidiendole que page amablemente. no te extiendas mucho.`,
       },
       { role: "user", content: msg },
     ],

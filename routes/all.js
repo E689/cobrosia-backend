@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const OpenAI = require("openai");
+const Clients = require("../models/clients");
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_KEY,
 });

@@ -368,11 +368,32 @@ router.delete("/clients/:id", deleteClient);
 
 router.post("/mensaje", (req, res) => {
   const { contactNumber, firstMessage, lastMessage } = req.body;
-  return res.status(200).json({
-    message: "aqui esta tu mierda, Cerote",
-    contactNumber,
-    firstMessage,
-    lastMessage,
-  });
+
+  fetch("https://api.ultramsg.com/instance68922/messages/chat", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      token: "t1byq90j0ln61sw9",
+      to: "+50248274591",
+      body: "papapapapau paupau pau pau papapapa paupaupaupau paupau paupau papapau pa paupau papau",
+    }),
+  })
+    .then((response) => response.json())
+    .then((data) => {
+      console.log(data);
+      return res.status(200).json({
+        message: `mensaje enviado`,
+        data,
+      });
+    })
+    .catch((error) => {
+      console.error("Fetch error:", error);
+      return res.status(200).json({
+        message: `fallo exitosamente`,
+        error,
+      });
+    });
 });
 module.exports = router;

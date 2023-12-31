@@ -465,7 +465,7 @@ const classifyMessage = async (msg) => {
     messages: [
       {
         role: "system",
-        content: `usted es un cobrador. Le voy a enviar un log de conversacion que hemos tenido con un usuario y genereme la respuesta a enviarle para que nos pague pronto. maximo de respuesta 250 caracteres.`,
+        content: `usted es un cobrador. Le voy a enviar una respuesta de un usuario ante un recordatorio de pago. respondale pidiendole que page amablemente`,
       },
       { role: "user", content: msg },
     ],
@@ -484,7 +484,9 @@ const getLogByPhone = (phone, msg) => {
           msg,
         };
 
-        const respuesta = await classifyMessage(msg);
+        const respuesta = await classifyMessage(
+          `soy ${foundClient.contactName}, le debo ${bill.amount} y era para el ${bill.dueDate} y le acabo de enviar este mensaje:${msg}`
+        );
 
         fetch("https://api.ultramsg.com/instance68922/messages/chat", {
           method: "POST",

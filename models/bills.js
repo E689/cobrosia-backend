@@ -15,6 +15,25 @@ const billsSchema = new mongoose.Schema(
     status: {
       type: String,
     },
+    context: {
+      reminder: {
+        type: String,
+        default: "",
+      },
+      editDueDate: {
+        type: String,
+        default: "",
+      },
+      priority: {
+        type: String,
+        default: "",
+      },
+      other: {
+        type: String,
+        default: "",
+      },
+    },
+
     client: { type: ObjectId, ref: "Clients" },
   },
   { timestamps: true }

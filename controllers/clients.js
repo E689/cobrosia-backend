@@ -2,13 +2,13 @@ const Clients = require("../models/clients");
 const Bills = require("../models/bills");
 
 exports.createClient = (req, res) => {
-  const { clientName, userId, contactName, contactlastName, phone, email } =
+  const { clientName, userId, contactName, contactLastName, phone, email } =
     req.body;
   if (
     !clientName ||
     !userId ||
     !contactName ||
-    !contactlastName ||
+    !contactLastName ||
     !phone ||
     !email
   ) {
@@ -21,7 +21,7 @@ exports.createClient = (req, res) => {
   const newClient = new Clients({
     clientName,
     contactName,
-    contactlastName,
+    contactLastName,
     phone,
     email,
     user: userId,

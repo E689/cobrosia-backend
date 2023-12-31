@@ -15,6 +15,7 @@ const {
   createBill,
   getBillsByUserId,
   deleteBill,
+  updateBill,
 } = require("../controllers/bills");
 const { sendMails } = require("../controllers/mail");
 
@@ -311,7 +312,7 @@ router.delete("/bills/:id", deleteBill);
  *       500:
  *         description: Internal error
  */
-router.put("/bills/:id", () => {});
+router.put("/bills/:id", updateBill);
 /**
  * @swagger
  * /clients/:id:

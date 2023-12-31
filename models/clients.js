@@ -10,7 +10,7 @@ const clientsSchema = new mongoose.Schema(
     contactName: {
       type: String,
     },
-    contactlastName: {
+    contactLastName: {
       type: String,
     },
     phone: {

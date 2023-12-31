@@ -2,7 +2,7 @@ const Bills = require("../models/bills");
 const Clients = require("../models/clients");
 
 exports.createBill = (req, res) => {
-  const { amount, dueDate, status, clientId, billId } = req.body;
+  const { amount, dueDate, status, clientId, billId, context } = req.body;
   if (!amount || !dueDate || !status || !clientId || !billId) {
     return res.status(400).json({
       message:
@@ -10,13 +10,19 @@ exports.createBill = (req, res) => {
     });
   }
 
-  const newBill = new Bills({
+  const data = {
     amount,
     dueDate,
     status,
     client: clientId,
     billId,
-  });
+  };
+
+  if (context) {
+    data.context = context;
+  }
+
+  const newBill = new Bills(data);
 
   newBill
     .save()
@@ -102,6 +108,44 @@ exports.deleteBill = (req, res) => {
       return res.status(500).json({
         error,
         message: "Error deleting bill",
+      });
+    });
+};
+
+exports.updateBill = (req, res) => {
+  const id = req.params.id;
+  const { amount, dueDate, status, clientId, billId, context } = req.body;
+
+  const updateData = {
+    amount,
+    dueDate,
+    status,
+    billId,
+    client: clientId,
+  };
+
+  if (context) {
+    updateData.context = context;
+  }
+
+  Bills.findByIdAndUpdate(id, updateData, { new: true })
+    .then((updatedBill) => {
+      if (!updatedBill) {
+        return res.status(404).json({
+          message: "Bill not found",
+        });
+      }
+
+      return res.status(200).json({
+        message: "Bill updated",
+        bill: updatedBill,
+      });
+    })
+    .catch((error) => {
+      console.log(error);
+      return res.status(500).json({
+        error,
+        message: "Error updating bill",
       });
     });
 };

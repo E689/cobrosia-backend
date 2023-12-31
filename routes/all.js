@@ -399,6 +399,21 @@ router.get("/bills/log/:id", getLogByBillId);
 
 router.get("/log", revisarBills);
 
+const classifyMessage = async (msg) => {
+  const openAiResponse = await openai.chat.completions.create({
+    messages: [
+      {
+        role: "system",
+        content: `usted es un cobrador. le voy a enviar una respuesta a un correo de cobro y necesito que me responda 1 si la intencion de la respuesta de de pago, 2 si la intencion de respuesta es de cambio de fecha o 3 si se necesita asistencia humana.`,
+      },
+      { role: "user", content: msg },
+    ],
+    model: "gpt-3.5-turbo",
+  });
+  const generatedText = openAiResponse.choices[0].message.content;
+  return generatedText;
+};
+
 const funcionCatchy = async (firstMessage) => {
   const openAiResponse = await openai.chat.completions.create({
     messages: [
@@ -448,6 +463,14 @@ router.post("/mensaje", async (req, res) => {
         error,
       });
     });
+});
+
+router.post("/class", async (req, res) => {
+  const { text } = req.body;
+  const respuesta = await classifyMessage(text);
+  return res.status(200).json({
+    message: `la intencion de pago es ${respuesta}`,
+  });
 });
 
 module.exports = router;

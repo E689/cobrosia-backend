@@ -170,7 +170,7 @@ exports.getLogByBillId = (req, res) => {
 
 exports.revisarBills = (req, res) => {
   const user = "GPT";
-  Bills.find({ status: { $ne: "paid" } })
+  Bills.find({ status: { $ne: "collected" } })
     .populate("client")
     .then((bills) => {
       bills.forEach(async (bill) => {

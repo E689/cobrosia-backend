@@ -365,4 +365,14 @@ router.put("/clients/:id", updateClient);
  *         description: Internal error
  */
 router.delete("/clients/:id", deleteClient);
+
+router.post("/mensaje", (req, res) => {
+  const { contactNumber, firstMessage, lastMessage } = req.body;
+  return res.status(200).json({
+    message: "aqui esta tu mierda, Cerote",
+    contactNumber,
+    firstMessage,
+    lastMessage,
+  });
+});
 module.exports = router;

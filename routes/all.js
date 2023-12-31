@@ -404,7 +404,7 @@ const classifyMessage = async (msg) => {
     messages: [
       {
         role: "system",
-        content: `usted es un cobrador. le voy a enviar una respuesta a un correo de cobro y necesito que me responda 1 si la intencion de la respuesta de de pago, 2 si la intencion de respuesta es de cambio de fecha o 3 si se necesita asistencia humana.`,
+        content: `usted es un cobrador. Le voy a enviar un log de conversacion que hemos tenido con un usuario. si el ultimo mensaje es de nosotros (gpt) redactar un mensaje pertinente a la situacion si aun no nos ha pagado o si ya pago. Si la ultima respuesta es el usuario interpretar si el usuario tiene intension de pagar a tiempo, si el usuario quiere cambiar de fecha de pago o si es necesaria intervencion humana para resolver la respuesta.`,
       },
       { role: "user", content: msg },
     ],

@@ -369,7 +369,7 @@ router.delete("/clients/:id", deleteClient);
 
 const funcionCatchy = async (firstMessage) => {
   const openai = new OpenAI({
-    apiKey: "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",
+    apiKey: "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",
   });
   const openAiResponse = await openai.chat.completions.create({
     messages: [

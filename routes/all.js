@@ -404,7 +404,7 @@ const classifyMessage = async (msg) => {
     messages: [
       {
         role: "system",
-        content: `usted es un cobrador. Le voy a enviar un log de conversacion que hemos tenido con un usuario. si el ultimo mensaje es de nosotros (gpt) redactar un mensaje pertinente a la situacion si aun no nos ha pagado o si ya pago. Si la ultima respuesta es el usuario interpretar si el usuario tiene intension de pagar a tiempo, si el usuario quiere cambiar de fecha de pago o si es necesaria intervencion humana para resolver la respuesta.`,
+        content: `usted es un cobrador. Le voy a enviar un log de conversacion que hemos tenido con un usuario. si el ultimo mensaje es de nosotros (gpt) redactar un mensaje pertinente a la situacion si aun no nos ha pagado o si ya pago. Si la ultima respuesta es el usuario interpretar si el usuario tiene intension de pagar a tiempo, si el usuario quiere cambiar de fecha de pago o si es necesaria intervencion humana para resolver la respuesta.Si el mensaje no tiene ninguna relacion con el cobro, de forma respetuosa y urgente recordarle el monto y la fecha que debio pagar y las consecuencias si no lo hace.`,
       },
       { role: "user", content: msg },
     ],

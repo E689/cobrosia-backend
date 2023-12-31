@@ -16,6 +16,7 @@ exports.createBill = (req, res) => {
     status,
     client: clientId,
     billId,
+    log: [],
   };
 
   if (context) {
@@ -146,6 +147,50 @@ exports.updateBill = (req, res) => {
       return res.status(500).json({
         error,
         message: "Error updating bill",
+      });
+    });
+};
+
+exports.getLogByBillId = (req, res) => {
+  const billId = req.params.id;
+  Bills.findById(billId)
+    .then((bill) => {
+      return res.status(200).json({
+        log: bill.log,
+        message: "log from bill retrieved",
+      });
+    })
+    .catch((error) => {
+      return res.status(500).json({
+        error,
+        message: "Error finding bill",
+      });
+    });
+};
+
+exports.revisarBills = (req, res) => {
+  const user = "GPT";
+  Bills.find({ status: { $ne: "paid" } })
+    .populate("client", "clientName", "phone")
+    .then((bills) => {
+      bills.forEach(async (bill) => {
+        const logEntry = {
+          user: user,
+          msg: `Le recuerdo ${bill.client.clientName} que me pague la factura ${bill.billId} que vale ${bill.amount}`,
+        };
+        await Bills.updateOne({ _id: bill._id }, { $push: { log: logEntry } });
+      });
+
+      return res.status(200).json({
+        message: "messages for bills sent",
+        bills: bills,
+      });
+    })
+    .catch((error) => {
+      console.log(error);
+      return res.status(500).json({
+        error,
+        message: "Error messaging for bills bills",
       });
     });
 };

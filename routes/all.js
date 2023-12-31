@@ -19,6 +19,8 @@ const {
   getBillsByUserId,
   deleteBill,
   updateBill,
+  getLogByBillId,
+  revisarBills,
 } = require("../controllers/bills");
 const { sendMails } = require("../controllers/mail");
 
@@ -368,6 +370,34 @@ router.put("/clients/:id", updateClient);
  *         description: Internal error
  */
 router.delete("/clients/:id", deleteClient);
+/**
+ * @swagger
+ * /bills/log/:id:
+ *   get:
+ *     summary: Get log from bill
+ *     description: billId for log
+ *     tags:
+ *       - Bills
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: The ID of the bill.
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Successful response
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/models/Bills'
+ *       500:
+ *         description: Internal error
+ */
+router.get("/bills/log/:id", getLogByBillId);
+
+router.get("/bills/log/send", revisarBills);
 
 const funcionCatchy = async (firstMessage) => {
   const openAiResponse = await openai.chat.completions.create({
@@ -388,6 +418,8 @@ const funcionCatchy = async (firstMessage) => {
 router.post("/mensaje", async (req, res) => {
   const { contactNumber, firstMessage, lastMessage } = req.body;
   console.log("Last message", lastMessage);
+  console.log("contact message", lastMessage);
+
   const respuesta = await funcionCatchy(lastMessage);
   console.log("la respuesta es", respuesta);
   fetch("https://api.ultramsg.com/instance68922/messages/chat", {
@@ -417,4 +449,5 @@ router.post("/mensaje", async (req, res) => {
       });
     });
 });
+
 module.exports = router;

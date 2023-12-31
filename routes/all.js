@@ -385,10 +385,10 @@ const funcionCatchy = async (firstMessage) => {
   return generatedText;
 };
 
-router.post("/mensaje", (req, res) => {
+router.post("/mensaje", async (req, res) => {
   const { contactNumber, firstMessage, lastMessage } = req.body;
   console.log("Last message", lastMessage);
-  const respuesta = funcionCatchy(lastMessage);
+  const respuesta = await funcionCatchy(lastMessage);
   console.log("la respuesta es", respuesta);
   fetch("https://api.ultramsg.com/instance68922/messages/chat", {
     method: "POST",

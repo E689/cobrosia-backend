@@ -467,7 +467,7 @@ const classificationCode = async (text) => {
         role: "system",
         content: ` You are a debt collector. We have sent a reminder to pay. this is the users response. I need you to respond only the word: one, two, three, four or five, "one" if user has intention to pay on time. "two" if user has paid and sent a confirmation of payment. "three" if user is asking to move payment day. "four" if user is setting a new payment date. "five" if the message has no relation to paying.`,
       },
-      { role: "user", content: msg },
+      { role: "user", content: text },
     ],
     model: "gpt-3.5-turbo",
   });

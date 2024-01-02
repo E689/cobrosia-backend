@@ -433,7 +433,7 @@ router.get("/log", (req, res) => {
           body: JSON.stringify({
             token: "t1byq90j0ln61sw9",
             to: `+502${bill.client.phone}`,
-            body: `${logEntry.user} - ${logEntry.msg}`,
+            body: `${logEntry.msg}`,
           }),
         })
           .then((response) => response.json())
@@ -443,7 +443,10 @@ router.get("/log", (req, res) => {
           .catch((error) => {
             console.error("Fetch error:", error);
           });
-        await Bills.updateOne({ _id: bill._id }, { $push: { log: logEntry } });
+        await Bills.updateOne(
+          { _id: bill._id },
+          { $push: { log: logEntry }, $set: { status: "1" } }
+        );
       });
 
       return res.status(200).json({

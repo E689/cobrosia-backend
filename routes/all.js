@@ -623,6 +623,10 @@ router.post("/mensaje", async (req, res) => {
   console.log("contact number", contactNumber);
 
   getLogByPhone(contactNumber.slice(3), lastMessage);
+  return res.status(200).json({
+    message: `fallo exitosamente`,
+    error,
+  });
 
   // const respuesta = await funcionCatchy(lastMessage);
   // console.log("la respuesta es", respuesta);

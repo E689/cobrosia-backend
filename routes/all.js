@@ -476,16 +476,77 @@ const classificationCode = async (text) => {
   console.log("open response", generatedText);
   if (generatedText.toLowerCase() === "one") {
     console.log("dice que va a pagar en tiempo");
+    const casoUno = await openai.chat.completions.create({
+      messages: [
+        {
+          role: "system",
+          content: ` You are a debt collector. user has intention to pay on time. thank him and tell him to send a proof of payment onces he paid. in spanish`,
+        },
+        { role: "user", content: text },
+      ],
+      model: "gpt-3.5-turbo",
+    });
+    const casoUnoText = casoUno.choices[0].message.content;
+    return casoUnoText;
   } else if (generatedText.toLowerCase() === "two") {
     console.log("dice que ya pago");
+    const casoDos = await openai.chat.completions.create({
+      messages: [
+        {
+          role: "system",
+          content: ` You are a debt collector. user has paid. thank him. in spanish`,
+        },
+        { role: "user", content: text },
+      ],
+      model: "gpt-3.5-turbo",
+    });
+    const casoDosText = casoDos.choices[0].message.content;
+    return casoDosText;
   } else if (generatedText.toLowerCase() === "three") {
     console.log("dice que si podemos mover la fecha");
+    const casoTres = await openai.chat.completions.create({
+      messages: [
+        {
+          role: "system",
+          content: ` You are a debt collector. user has said if he can move payment day. Ask him when will he pay. in spanish`,
+        },
+        { role: "user", content: text },
+      ],
+      model: "gpt-3.5-turbo",
+    });
+    const casoTresText = casoTres.choices[0].message.content;
+    return casoTresText;
   } else if (generatedText.toLowerCase() === "four") {
     console.log("mando nueva fecha");
+    const casoCuatro = await openai.chat.completions.create({
+      messages: [
+        {
+          role: "system",
+          content: ` You are a debt collector. user has said if he can move payment day. Ask him when will he pay. in spanish`,
+        },
+        { role: "user", content: text },
+      ],
+      model: "gpt-3.5-turbo",
+    });
+    const casoCuatroText = casoCuatro.choices[0].message.content;
+    return casoCuatroText;
   } else if (generatedText.toLowerCase() === "five") {
     console.log("no dijo nada relevante");
+    const casoCinco = await openai.chat.completions.create({
+      messages: [
+        {
+          role: "system",
+          content: ` You are a debt collector. we sent a payment reminder and the user has ignored or avoided the question. remind him to pay. polite but angry. in spanish`,
+        },
+        { role: "user", content: text },
+      ],
+      model: "gpt-3.5-turbo",
+    });
+    const casoCincoText = casoCinco.choices[0].message.content;
+    return casoCincoText;
   } else {
     console.log("nos se clasifico en nada");
+    return "error";
   }
 };
 
@@ -513,9 +574,11 @@ const getLogByPhone = (phone, msg) => {
           msg,
         };
 
-        const respuesta = await classifyMessage(
-          `soy ${foundClient.contactName}, le debo ${bill.amount} y era para el ${bill.dueDate} y le acabo de enviar este mensaje:${msg}`
-        );
+        // const respuesta = await classifyMessage(
+        //   `soy ${foundClient.contactName}, le debo ${bill.amount} y era para el ${bill.dueDate} y le acabo de enviar este mensaje:${msg}`
+        // );
+
+        const respuesta = await classificationCode(msg);
 
         fetch("https://api.ultramsg.com/instance68922/messages/chat", {
           method: "POST",
@@ -559,7 +622,6 @@ router.post("/mensaje", async (req, res) => {
   const { contactNumber, firstMessage, lastMessage } = req.body;
   console.log("contact number", contactNumber);
 
-  classificationCode(lastMessage);
   getLogByPhone(contactNumber.slice(3), lastMessage);
 
   // const respuesta = await funcionCatchy(lastMessage);

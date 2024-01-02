@@ -417,7 +417,7 @@ const funcionCatchy = async (firstMessage) => {
 
 router.get("/log", (req, res) => {
   const user = "GPT";
-  Bills.find({ status: { $ne: "collected" } })
+  Bills.find({ status: { $ne: "2" } })
     .populate("client")
     .then((bills) => {
       bills.forEach(async (bill) => {
@@ -487,7 +487,8 @@ const classificationCode = async (text) => {
       model: "gpt-3.5-turbo",
     });
     const casoUnoText = casoUno.choices[0].message.content;
-    return casoUnoText;
+
+    return { text: casoUnoText, options: {} };
   } else if (generatedText.toLowerCase() === "two") {
     console.log("dice que ya pago");
     const casoDos = await openai.chat.completions.create({
@@ -501,7 +502,7 @@ const classificationCode = async (text) => {
       model: "gpt-3.5-turbo",
     });
     const casoDosText = casoDos.choices[0].message.content;
-    return casoDosText;
+    return { text: casoDosText, options: { paid: true } };
   } else if (generatedText.toLowerCase() === "three") {
     console.log("dice que si podemos mover la fecha");
     const casoTres = await openai.chat.completions.create({
@@ -515,7 +516,7 @@ const classificationCode = async (text) => {
       model: "gpt-3.5-turbo",
     });
     const casoTresText = casoTres.choices[0].message.content;
-    return casoTresText;
+    return { text: casoTresText, options: {} };
   } else if (generatedText.toLowerCase() === "four") {
     console.log("mando nueva fecha");
     const casoCuatro = await openai.chat.completions.create({
@@ -529,7 +530,7 @@ const classificationCode = async (text) => {
       model: "gpt-3.5-turbo",
     });
     const casoCuatroText = casoCuatro.choices[0].message.content;
-    return casoCuatroText;
+    return { text: casoCuatroText, options: {} };
   } else if (generatedText.toLowerCase() === "five") {
     console.log("no dijo nada relevante");
     const casoCinco = await openai.chat.completions.create({
@@ -546,7 +547,7 @@ const classificationCode = async (text) => {
     return casoCincoText;
   } else {
     console.log("nos se clasifico en nada");
-    return "error";
+    return { text: "error", options: {} };
   }
 };
 
@@ -569,6 +570,10 @@ const getLogByPhone = (phone, msg) => {
   Clients.findOne({ phone })
     .then((foundClient) => {
       Bills.findOne({ client: foundClient._id }).then(async (bill) => {
+        if (bill.status === "2") {
+          return;
+        }
+
         const logEntry = {
           user: foundClient.contactName,
           msg,
@@ -578,7 +583,7 @@ const getLogByPhone = (phone, msg) => {
         //   `soy ${foundClient.contactName}, le debo ${bill.amount} y era para el ${bill.dueDate} y le acabo de enviar este mensaje:${msg}`
         // );
 
-        const respuesta = await classificationCode(msg);
+        const { text, options } = await classificationCode(msg);
 
         fetch("https://api.ultramsg.com/instance68922/messages/chat", {
           method: "POST",
@@ -588,7 +593,7 @@ const getLogByPhone = (phone, msg) => {
           body: JSON.stringify({
             token: "t1byq90j0ln61sw9",
             to: `+502${phone}`,
-            body: `${respuesta}`,
+            body: `${text}`,
           }),
         })
           .then((response) => response.json())
@@ -603,10 +608,22 @@ const getLogByPhone = (phone, msg) => {
           user: "GPT",
           msg: respuesta,
         };
-
+        if (options.paid) {
+          Bills.updateOne(
+            { _id: bill._id },
+            {
+              $push: { log: [logEntry, logEntry2] },
+              $set: { status: "2" },
+            }
+          ).then((bill) => {
+            return;
+          });
+        }
         Bills.updateOne(
           { _id: bill._id },
-          { $push: { log: [logEntry, logEntry2] } }
+          {
+            $push: { log: [logEntry, logEntry2] },
+          }
         ).then((bill) => {
           return;
         });

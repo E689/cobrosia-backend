@@ -35,7 +35,7 @@ exports.createBill = (req, res) => {
           bills.forEach(async (bill) => {
             const logEntry = {
               user: user,
-              msg: `Le recuerdo ${bill.client.clientName} que me pague la factura ${bill.billId} que vale ${bill.amount}`,
+              msg: `Estimado ${bill.client.clientName} tiene una factura numero ${bill.billId} por un monto de ${bill.amount} pendiente de pago.`,
             };
             fetch("https://api.ultramsg.com/instance68922/messages/chat", {
               method: "POST",
@@ -217,7 +217,7 @@ exports.revisarBills = (req, res) => {
       bills.forEach(async (bill) => {
         const logEntry = {
           user: user,
-          msg: `Le recuerdo ${bill.client.clientName} que me pague la factura ${bill.billId} que vale ${bill.amount}`,
+          msg: `Le recuerdo ${bill.client.clientName} que pague la factura ${bill.billId} que vale ${bill.amount}`,
         };
         await Bills.updateOne({ _id: bill._id }, { $push: { log: logEntry } });
       });

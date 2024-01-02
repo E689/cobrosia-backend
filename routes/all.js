@@ -421,6 +421,20 @@ router.get("/log", (req, res) => {
     .populate("client")
     .then((bills) => {
       bills.forEach(async (bill) => {
+        const priorityAndOther = `the priority of this bill is: ${bill.context.priority} , if it is 0 is ok, 1 is important for the user to pay, 2 is urgent and we need the payment now. also take into account this:${bill.context.other}. be brief. include users name: ${bill.client.clientName} ,bill ID:  ${bill.billId} and amount: ${bill.amount}. in spanish.`;
+
+        const openAiResponse = await openai.chat.completions.create({
+          messages: [
+            {
+              role: "system",
+              content: ` You are a debt collector. ${priorityAndOther}`,
+            },
+            { role: "user", content: text },
+          ],
+          model: "gpt-3.5-turbo",
+        });
+        const generatedText = openAiResponse.choices[0].message.content;
+
         const logEntry = {
           user: user,
           msg: `Le recuerdo ${bill.client.clientName} que me pague la factura ${bill.billId} que vale ${bill.amount}`,
@@ -463,7 +477,9 @@ router.get("/log", (req, res) => {
     });
 });
 
-const classificationCode = async (text) => {
+const classificationCode = async (text, bill) => {
+  const priorityAndOther = `the priority of this bill is: ${bill.context.priority} , if it is 0 is ok, 1 is important for the user to pay, 2 is urgent and we need the payment now. also take into account this:${bill.context.other}`;
+
   const openAiResponse = await openai.chat.completions.create({
     messages: [
       {
@@ -512,7 +528,11 @@ const classificationCode = async (text) => {
       messages: [
         {
           role: "system",
-          content: ` You are a debt collector. user has said if he can move payment day. Ask him when will he pay. in spanish`,
+          content: ` You are a debt collector. user has said if he can move payment day. ${
+            JSON.parse(bill.editDueDate)
+              ? "Ask him when will he pay."
+              : "Remind him he is not able to move his payment day"
+          } in spanish`,
         },
         { role: "user", content: text },
       ],
@@ -526,7 +546,11 @@ const classificationCode = async (text) => {
       messages: [
         {
           role: "system",
-          content: ` You are a debt collector. user has said if he can move payment day. Ask him when will he pay. in spanish`,
+          content: ` You are a debt collector. user has said if he can move payment day to a new specified date.  ${
+            JSON.parse(bill.editDueDate)
+              ? "Confirm new payment day only if the date isnt greater than december 31st 2024. and thank him"
+              : "Remind him he is not able to move his payment day"
+          } . in spanish`,
         },
         { role: "user", content: text },
       ],
@@ -540,7 +564,7 @@ const classificationCode = async (text) => {
       messages: [
         {
           role: "system",
-          content: ` You are a debt collector. we sent a payment reminder and the user has ignored or avoided the question. remind him to pay. polite but angry. in spanish`,
+          content: ` You are a debt collector. we sent a payment reminder and the user has ignored or avoided the question. remind him to pay. polite but angry.${priorityAndOther} be brief in spanish`,
         },
         { role: "user", content: text },
       ],
@@ -586,7 +610,7 @@ const getLogByPhone = (phone, msg) => {
         //   `soy ${foundClient.contactName}, le debo ${bill.amount} y era para el ${bill.dueDate} y le acabo de enviar este mensaje:${msg}`
         // );
 
-        const { text, options } = await classificationCode(msg);
+        const { text, options } = await classificationCode(msg, bill);
 
         fetch("https://api.ultramsg.com/instance68922/messages/chat", {
           method: "POST",

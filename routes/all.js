@@ -609,7 +609,7 @@ const getLogByPhone = (phone, msg) => {
 
         const logEntry2 = {
           user: "GPT",
-          msg: respuesta,
+          msg: text,
         };
         if (options.paid) {
           Bills.updateOne(

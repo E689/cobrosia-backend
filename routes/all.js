@@ -460,6 +460,35 @@ router.get("/log", (req, res) => {
     });
 });
 
+const classificationCode = async (text) => {
+  const openAiResponse = await openai.chat.completions.create({
+    messages: [
+      {
+        role: "system",
+        content: ` You are a debt collector. We have sent a reminder to pay. this is the users response. I need you to respond only the word: one, two, three, four or five, "one" if user has intention to pay on time. "two" if user has paid and sent a confirmation of payment. "three" if user is asking to move payment day. "four" if user is setting a new payment date. "five" if the message has no relation to paying.`,
+      },
+      { role: "user", content: msg },
+    ],
+    model: "gpt-3.5-turbo",
+  });
+  const generatedText = openAiResponse.choices[0].message.content;
+
+  console.log("open response", generatedText);
+  if (generatedText.toLowerCase() === "one") {
+    console.log("dice que va a pagar en tiempo");
+  } else if (generatedText.toLowerCase() === "two") {
+    console.log("dice que ya pago");
+  } else if (generatedText.toLowerCase() === "three") {
+    console.log("dice que si podemos mover la fecha");
+  } else if (generatedText.toLowerCase() === "four") {
+    console.log("mando nueva fecha");
+  } else if (generatedText.toLowerCase() === "five") {
+    console.log("no dijo nada relevante");
+  } else {
+    console.log("nos se clasifico en nada");
+  }
+};
+
 const classifyMessage = async (msg) => {
   const openAiResponse = await openai.chat.completions.create({
     messages: [
@@ -529,6 +558,8 @@ const getLogByPhone = (phone, msg) => {
 router.post("/mensaje", async (req, res) => {
   const { contactNumber, firstMessage, lastMessage } = req.body;
   console.log("contact number", contactNumber);
+
+  classificationCode(lastMessage);
   getLogByPhone(contactNumber.slice(3), lastMessage);
 
   // const respuesta = await funcionCatchy(lastMessage);

@@ -547,7 +547,7 @@ const classificationCode = async (text) => {
       model: "gpt-3.5-turbo",
     });
     const casoCincoText = casoCinco.choices[0].message.content;
-    return casoCincoText;
+    return { text: casoCincoText, options: {} };
   } else {
     console.log("nos se clasifico en nada");
     return { text: "error", options: {} };

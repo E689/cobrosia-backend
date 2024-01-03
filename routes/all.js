@@ -599,7 +599,9 @@ const getLogByPhone = (phone, msg) => {
   Clients.findOne({ phone })
     .then((foundClient) => {
       console.log("client found");
-      Bills.find({ client: foundClient._id }).then(async (bills) => {
+      Bills.find({
+        $and: [{ client: foundClient._id }, { status: { $in: ["0", "1"] } }],
+      }).then(async (bills) => {
         bills.forEach(async (bill) => {
           if (bill.status === "2") {
             console.log("bill is paid found");

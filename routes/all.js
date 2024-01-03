@@ -477,7 +477,7 @@ router.get("/log", (req, res) => {
 });
 
 const classificationCode = async (text, bill) => {
-  //console.log("the bill is ", bill);
+  console.log("the bill is ", bill);
   const priorityAndOther = `the priority of this bill is: ${bill.context.priority} , if it is 0 is ok, 1 is important for the user to pay, 2 is urgent and we need the payment now.`;
   const priorityOther = `also take into account this:${bill.context.other}`;
   const openAiResponse = await openai.chat.completions.create({

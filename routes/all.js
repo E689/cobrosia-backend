@@ -600,6 +600,7 @@ const getLogByPhone = (phone, msg) => {
     .then((foundClient) => {
       console.log("client found");
       Bills.find({ client: foundClient._id }).then(async (bills) => {
+        console.log(bills);
         for (const bill in bills) {
           if (bill.status === "2") {
             console.log("bill is paid found");

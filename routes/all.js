@@ -598,8 +598,11 @@ const getLogByPhone = (phone, msg) => {
   console.log("the message is", msg);
   Clients.findOne({ phone })
     .then((foundClient) => {
+      console.log("client found");
       Bills.findOne({ client: foundClient._id }).then(async (bill) => {
+        console.log("bill found", bill);
         if (bill.status === "2") {
+          console.log("bill is paid found");
           return;
         }
 

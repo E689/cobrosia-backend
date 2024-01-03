@@ -594,6 +594,8 @@ const classifyMessage = async (msg) => {
 };
 
 const getLogByPhone = (phone, msg) => {
+  console.log("the client is", phone);
+  console.log("the message is", msg);
   Clients.findOne({ phone })
     .then((foundClient) => {
       Bills.findOne({ client: foundClient._id }).then(async (bill) => {

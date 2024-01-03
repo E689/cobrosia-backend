@@ -421,7 +421,7 @@ router.get("/log", (req, res) => {
     .populate("client")
     .then((bills) => {
       bills.forEach(async (bill) => {
-        const priorityAndOther = `the priority of this bill is: ${bill.context.priority} , if it is 0 is ok, 1 is important for the user to pay, 2 is urgent and we need the payment now. also take into account this:${bill.context.other}. be brief. include users name: ${bill.client.clientName} ,bill ID:  ${bill.billId} and amount: ${bill.amount}. in spanish.`;
+        const priorityAndOther = `the priority of this bill is: ${bill.context.priority} , if it is 0 is ok, 1 is important for the user to pay, 2 is urgent and we need the payment now. also take into account this:${bill.context.other}. be brief. include users name: ${bill.client.clientName} ,bill ID:  ${bill.billId} and amount: Q ${bill.amount}. in spanish.`;
 
         const openAiResponse = await openai.chat.completions.create({
           messages: [
@@ -429,7 +429,6 @@ router.get("/log", (req, res) => {
               role: "system",
               content: ` You are a debt collector. ${priorityAndOther}`,
             },
-            { role: "user", content: text },
           ],
           model: "gpt-3.5-turbo",
         });
@@ -437,7 +436,7 @@ router.get("/log", (req, res) => {
 
         const logEntry = {
           user: user,
-          msg: `Le recuerdo ${bill.client.clientName} que me pague la factura ${bill.billId} que vale ${bill.amount}`,
+          msg: generatedText,
         };
         fetch("https://api.ultramsg.com/instance68922/messages/chat", {
           method: "POST",
@@ -447,7 +446,7 @@ router.get("/log", (req, res) => {
           body: JSON.stringify({
             token: "t1byq90j0ln61sw9",
             to: `+502${bill.client.phone}`,
-            body: `${logEntry.msg}`,
+            body: `${generatedText}`,
           }),
         })
           .then((response) => response.json())

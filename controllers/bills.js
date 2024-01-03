@@ -29,13 +29,13 @@ exports.createBill = (req, res) => {
     .save()
     .then((newBill) => {
       const user = "GPT";
-      Bills.find({ status: { $ne: "collected" } })
+      Bills.find({ status: { $ne: "2" } })
         .populate("client")
         .then((bills) => {
           bills.forEach(async (bill) => {
             const logEntry = {
               user: user,
-              msg: `Estimado ${bill.client.clientName} tiene una factura numero ${bill.billId} por un monto de ${bill.amount} pendiente de pago.`,
+              msg: `Estimado ${bill.client.clientName} tiene una factura numero ${bill.billId} por un monto de Q ${bill.amount} pendiente de pago.`,
             };
             fetch("https://api.ultramsg.com/instance68922/messages/chat", {
               method: "POST",

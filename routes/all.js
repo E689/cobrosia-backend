@@ -477,6 +477,7 @@ router.get("/log", (req, res) => {
 });
 
 const classificationCode = async (text, bill) => {
+  console.log("the bill is ", bill);
   const priorityAndOther = `the priority of this bill is: ${bill.context.priority} , if it is 0 is ok, 1 is important for the user to pay, 2 is urgent and we need the payment now. also take into account this:${bill.context.other}`;
 
   const openAiResponse = await openai.chat.completions.create({
@@ -604,7 +605,7 @@ const getLogByPhone = (phone, msg) => {
           user: foundClient.contactName,
           msg,
         };
-
+        console.log("about to classify message");
         // const respuesta = await classifyMessage(
         //   `soy ${foundClient.contactName}, le debo ${bill.amount} y era para el ${bill.dueDate} y le acabo de enviar este mensaje:${msg}`
         // );

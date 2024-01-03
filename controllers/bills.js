@@ -29,7 +29,7 @@ exports.createBill = (req, res) => {
     .save()
     .then((newBill) => {
       const user = "GPT";
-      Bills.find({ status: { $ne: "2" } })
+      Bills.find({ status: { $in: ["0", "1"] } })
         .populate("client")
         .then((bills) => {
           bills.forEach(async (bill) => {

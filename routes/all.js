@@ -417,7 +417,7 @@ const funcionCatchy = async (firstMessage) => {
 
 router.get("/log", (req, res) => {
   const user = "GPT";
-  Bills.find({ status: { $nin: ["2", "3", "-1"] } })
+  Bills.find({ status: { $in: ["0", "1"] } })
     .populate("client")
     .then((bills) => {
       bills.forEach(async (bill) => {

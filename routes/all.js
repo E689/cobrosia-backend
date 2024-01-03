@@ -529,7 +529,7 @@ const classificationCode = async (text, bill) => {
         {
           role: "system",
           content: ` You are a debt collector. user has said if he can move payment day. ${
-            JSON.parse(bill.editDueDate)
+            JSON.parse(bill.context.editDueDate)
               ? "Ask him when will he pay."
               : "Remind him he is not able to move his payment day"
           } in spanish`,
@@ -547,7 +547,7 @@ const classificationCode = async (text, bill) => {
         {
           role: "system",
           content: ` You are a debt collector. user has said if he can move payment day to a new specified date.  ${
-            JSON.parse(bill.editDueDate)
+            JSON.parse(bill.context.editDueDate)
               ? "Confirm new payment day only if the date isnt greater than december 31st 2024. and thank him"
               : "Remind him he is not able to move his payment day"
           } . in spanish`,
@@ -564,7 +564,7 @@ const classificationCode = async (text, bill) => {
       messages: [
         {
           role: "system",
-          content: ` You are a debt collector. we sent a payment reminder and the user has ignored or avoided the question. remind him to pay. polite but angry.${priorityAndOther} be brief in spanish`,
+          content: ` You are a debt collector. we sent a payment reminder and the user has ignored or avoided the question. remind him to pay. polite but angry.${priorityAndOther} in spanish.be brief in one paragraph.`,
         },
         { role: "user", content: text },
       ],

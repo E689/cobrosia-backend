@@ -477,9 +477,9 @@ router.get("/log", (req, res) => {
 });
 
 const classificationCode = async (text, bill) => {
-  console.log("the bill is ", bill);
-  const priorityAndOther = `the priority of this bill is: ${bill.context.priority} , if it is 0 is ok, 1 is important for the user to pay, 2 is urgent and we need the payment now. also take into account this:${bill.context.other}`;
-
+  //console.log("the bill is ", bill);
+  const priorityAndOther = `the priority of this bill is: ${bill.context.priority} , if it is 0 is ok, 1 is important for the user to pay, 2 is urgent and we need the payment now.`;
+  const priorityOther = `also take into account this:${bill.context.other}`;
   const openAiResponse = await openai.chat.completions.create({
     messages: [
       {
@@ -499,7 +499,7 @@ const classificationCode = async (text, bill) => {
       messages: [
         {
           role: "system",
-          content: ` You are a debt collector. user has intention to pay on time. thank him and tell him to send a proof of payment onces he paid. in spanish`,
+          content: ` You are a debt collector. user has intention to pay on time. thank him and tell him to send a proof of payment onces he paid.${priorityOther} in spanish`,
         },
         { role: "user", content: text },
       ],
@@ -514,7 +514,7 @@ const classificationCode = async (text, bill) => {
       messages: [
         {
           role: "system",
-          content: ` You are a debt collector. user has paid. thank him. in spanish`,
+          content: ` You are a debt collector. user has paid. thank him. ${priorityOther} in spanish`,
         },
         { role: "user", content: text },
       ],
@@ -531,7 +531,7 @@ const classificationCode = async (text, bill) => {
           content: ` You are a debt collector. user has said if he can move payment day. ${
             JSON.parse(bill.context.editDueDate)
               ? "Ask him when will he pay."
-              : "Remind him he is not able to move his payment day"
+              : `Remind him he is not able to move his payment day. ${priorityOther}`
           } in spanish`,
         },
         { role: "user", content: text },
@@ -549,7 +549,7 @@ const classificationCode = async (text, bill) => {
           content: ` You are a debt collector. user has said if he can move payment day to a new specified date.  ${
             JSON.parse(bill.context.editDueDate)
               ? "Confirm new payment day only if the date isnt greater than december 31st 2024. and thank him"
-              : "Remind him he is not able to move his payment day"
+              : `Remind him he is not able to move his payment day ${priorityOther}`
           } . in spanish`,
         },
         { role: "user", content: text },
@@ -594,71 +594,72 @@ const classifyMessage = async (msg) => {
 };
 
 const getLogByPhone = (phone, msg) => {
-  console.log("the client is", phone);
-  console.log("the message is", msg);
+  //console.log("the client is", phone);
+  //console.log("the message is", msg);
   Clients.findOne({ phone })
     .then((foundClient) => {
       console.log("client found");
-      Bills.findOne({ client: foundClient._id }).then(async (bill) => {
-        console.log("bill found", bill);
-        if (bill.status === "2") {
-          console.log("bill is paid found");
-          return;
-        }
+      Bills.find({ client: foundClient._id }).then(async (bills) => {
+        for (const bill in bills) {
+          if (bill.status === "2") {
+            console.log("bill is paid found");
+            return;
+          }
 
-        const logEntry = {
-          user: foundClient.contactName,
-          msg,
-        };
-        console.log("about to classify message");
-        // const respuesta = await classifyMessage(
-        //   `soy ${foundClient.contactName}, le debo ${bill.amount} y era para el ${bill.dueDate} y le acabo de enviar este mensaje:${msg}`
-        // );
+          const logEntry = {
+            user: foundClient.contactName,
+            msg,
+          };
+          console.log("about to classify message");
+          // const respuesta = await classifyMessage(
+          //   `soy ${foundClient.contactName}, le debo ${bill.amount} y era para el ${bill.dueDate} y le acabo de enviar este mensaje:${msg}`
+          // );
 
-        const { text, options } = await classificationCode(msg, bill);
+          const { text, options } = await classificationCode(msg, bill);
 
-        fetch("https://api.ultramsg.com/instance68922/messages/chat", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            token: "t1byq90j0ln61sw9",
-            to: `+502${phone}`,
-            body: `${text}`,
-          }),
-        })
-          .then((response) => response.json())
-          .then((data) => {
-            console.log(data);
+          fetch("https://api.ultramsg.com/instance68922/messages/chat", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              token: "t1byq90j0ln61sw9",
+              to: `+502${phone}`,
+              body: `${text}`,
+            }),
           })
-          .catch((error) => {
-            console.error("Fetch error:", error);
-          });
+            .then((response) => response.json())
+            .then((data) => {
+              console.log(data);
+            })
+            .catch((error) => {
+              console.error("Fetch error:", error);
+            });
 
-        const logEntry2 = {
-          user: "GPT",
-          msg: text,
-        };
-        if (options.paid) {
+          const logEntry2 = {
+            user: "GPT",
+            msg: text,
+          };
+          if (options.paid) {
+            Bills.updateOne(
+              { _id: bill._id },
+              {
+                $push: { log: [logEntry, logEntry2] },
+                $set: { status: "2" },
+              }
+            ).then((bill) => {
+              return;
+            });
+          }
           Bills.updateOne(
             { _id: bill._id },
             {
               $push: { log: [logEntry, logEntry2] },
-              $set: { status: "2" },
             }
           ).then((bill) => {
             return;
           });
         }
-        Bills.updateOne(
-          { _id: bill._id },
-          {
-            $push: { log: [logEntry, logEntry2] },
-          }
-        ).then((bill) => {
-          return;
-        });
       });
     })
     .catch((error) => {

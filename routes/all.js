@@ -5,9 +5,6 @@ const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
 const {
-  classificationCode,
-  getLogByPhone,
-  funcionCatchy,
   logController,
   mensajeController,
   classController,

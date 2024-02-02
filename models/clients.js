@@ -7,6 +7,9 @@ const clientsSchema = new mongoose.Schema(
     clientName: {
       type: String,
     },
+    clientId: {
+      type: String,
+    },
     contactName: {
       type: String,
     },

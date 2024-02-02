@@ -341,24 +341,21 @@ const fileController = (req, res) => {
       req.file.mimetype.includes("excel") ||
       req.file.mimetype.includes("csv")
     ) {
-      // Acknowledge the receipt of the file
       res.status(200).send("File received. Processing started.");
     }
-
-    // Check if the uploaded file is an Excel file
     if (req.file.mimetype.includes("excel")) {
       const workbook = xlsx.read(req.file.buffer, { type: "buffer" });
 
-      // Iterate through each sheet in the workbook
       workbook.SheetNames.forEach((sheetName) => {
         const sheet = workbook.Sheets[sheetName];
         const data = xlsx.utils.sheet_to_json(sheet, { header: 1 });
 
-        // Iterate through each row in the sheet
         data.forEach((row) => {
           lineCount++;
-          //console.log(row);
-          // You can perform any desired operations with each row data here
+          console.log(`Client nit: ${row[9]} name: ${row[10]}`);
+          console.log(
+            `Bill ID: ${row[4]} amount: ${row[14]} dueDate: ${row[0]}`
+          );
         });
       });
 
@@ -386,8 +383,12 @@ const fileController = (req, res) => {
             )
           ) {
             lineCount++;
-            //console.log(row);
-            // Process each row for CSV
+            console.log(
+              `Client nit: ${row.nit_comprador} name: ${row.nom_comer_comprador}`
+            );
+            console.log(
+              `Bill ID: ${row.numero_de_documento} amount: ${row.total_impuestos} dueDate: ${row.fecha_registro}`
+            );
           } else {
             //console.log("Skipped empty row");
           }

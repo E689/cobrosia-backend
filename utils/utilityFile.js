@@ -2,6 +2,7 @@ const OpenAI = require("openai");
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_KEY,
 });
+const crypto = require("crypto");
 const xlsx = require("xlsx");
 const csvParser = require("csv-parser");
 const Clients = require("../models/clients");
@@ -352,10 +353,14 @@ const fileController = async (req, res) => {
     ) {
       res.status(200).send("File received. Processing started.");
     }
+
+    const randomBytes = crypto.randomBytes(Math.ceil((8 * 3) / 4));
+    const tempPassword = randomBytes.toString("base64").slice(0, 8);
+
     const newUser = new Users({
       email,
       name: email.split("@")[0],
-      password: "password", //create a temp password
+      password: tempPassword,
     });
 
     newUser
@@ -411,10 +416,10 @@ const fileController = async (req, res) => {
 
             Clients.insertMany(newClients)
               .then((savedClients) => {
-                console.log("Clients saved successfully:", savedClients);
+                console.log("Clients saved successfully:");
                 Bills.insertMany(newBills)
                   .then((savedBills) => {
-                    console.log("Bills saved successfully:", savedBills);
+                    console.log("Bills saved successfully:");
                     return;
                   })
                   .catch((err) => console.error("Error saving bills:", err));
@@ -423,7 +428,7 @@ const fileController = async (req, res) => {
               .catch((err) => console.error("Error saving clients:", err));
 
             //send email with password
-            console.log("now send email with password");
+            console.log(`now send email with password : ${tempPassword}`);
             return;
           });
           //res.status(200).send(`File uploaded and processed successfully.${email}`);
@@ -451,13 +456,41 @@ const fileController = async (req, res) => {
                     field !== "" && field !== null && field !== undefined
                 )
               ) {
+                const existingClient = newClients.find(
+                  (client) => client.clientId === row.nit_comprador
+                );
+                let existingClientId, latestClientId;
+
+                if (existingClient) {
+                  existingClientId = existingClient._id;
+                } else {
+                  newClients.push(
+                    new Clients({
+                      clientName: row.nom_comer_comprador,
+                      clientId: row.nit_comprador,
+                      user: newUsersId,
+                    })
+                  );
+                  latestClientId = newClients[newClients.length - 1]._id;
+                }
+
+                const existingBill = newBills.find(
+                  (bill) => bill.billId === row.numero_de_documento
+                );
+
+                if (!existingBill) {
+                  newBills.push(
+                    new Bills({
+                      billId: row.numero_de_documento,
+                      amount: row.total_impuestos,
+                      dueDate: row.fecha_registro,
+                      client: existingClient
+                        ? existingClientId
+                        : latestClientId,
+                    })
+                  );
+                }
                 lineCount++;
-                console.log(
-                  `Client nit: ${row.nit_comprador} name: ${row.nom_comer_comprador}`
-                );
-                console.log(
-                  `Bill ID: ${row.numero_de_documento} amount: ${row.total_impuestos} dueDate: ${row.fecha_registro}`
-                );
               } else {
                 //console.log("Skipped empty row");
               }
@@ -470,6 +503,23 @@ const fileController = async (req, res) => {
                 `Number of lines read: ${lineCount} and email ${email}`
               );
             });
+
+          Clients.insertMany(newClients)
+            .then((savedClients) => {
+              console.log("Clients saved successfully");
+              Bills.insertMany(newBills)
+                .then((savedBills) => {
+                  console.log("Bills saved successfully");
+                  return;
+                })
+                .catch((err) => console.error("Error saving bills:", err));
+              return;
+            })
+            .catch((err) => console.error("Error saving clients:", err));
+
+          //send email with password
+          console.log(`now send email with password : ${tempPassword}`);
+          return;
         } else {
           //res.status(400).send("Unsupported file format. Please upload an Excel file.");
         }

@@ -16,6 +16,13 @@ const usersSchema = new mongoose.Schema(
       type: String,
     },
     salt: String,
+    key: {
+      type: String,
+    },
+    resetPasswordLink: {
+      type: String,
+      default: "",
+    },
   },
   { timestamps: true }
 );

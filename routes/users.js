@@ -1,7 +1,13 @@
 const express = require("express");
 const router = express.Router();
 
-const { createUser, logUser } = require("../controllers/users");
+const {
+  createUser,
+  logUser,
+  activateUser,
+  resetPassword,
+  forgotPassword,
+} = require("../controllers/users");
 
 /**
  * @swagger
@@ -46,6 +52,9 @@ const { createUser, logUser } = require("../controllers/users");
  *
  */
 router.post("/users/register", createUser);
+
+router.post("/users/register/activate", activateUser);
+
 /**
  * @swagger
  * /users/login:
@@ -81,5 +90,9 @@ router.post("/users/register", createUser);
  *
  */
 router.post("/users/login", logUser);
+
+router.post("/users/reset-password", resetPassword);
+
+router.post("/users/forgot-password", forgotPassword);
 
 module.exports = router;

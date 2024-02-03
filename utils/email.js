@@ -1,0 +1,1 @@
+exports.forgotPasswordEmailParams = (req, res) => {};

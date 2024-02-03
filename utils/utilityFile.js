@@ -6,6 +6,7 @@ const xlsx = require("xlsx");
 const csvParser = require("csv-parser");
 const Clients = require("../models/clients");
 const Bills = require("../models/bills");
+const Users = require("../models/users");
 
 const classificationCode = async (text, bill) => {
   console.log("the bill is ", bill);
@@ -325,12 +326,20 @@ const classController = async (req, res) => {
   });
 };
 
-const fileController = (req, res) => {
+const fileController = async (req, res) => {
   try {
     let lineCount = 0;
     const email = req.body.email;
     if (!email) {
       return res.status(400).send("Email is required.");
+    }
+
+    const existingUser = await Users.findOne({ email });
+
+    if (existingUser) {
+      return res.status(409).json({
+        message: "Email is already registered. Please use a different email.",
+      });
     }
 
     if (!req.file) {
@@ -343,70 +352,135 @@ const fileController = (req, res) => {
     ) {
       res.status(200).send("File received. Processing started.");
     }
-    if (req.file.mimetype.includes("excel")) {
-      const workbook = xlsx.read(req.file.buffer, { type: "buffer" });
+    const newUser = new Users({
+      email,
+      name: email.split("@")[0],
+      password: "password", //create a temp password
+    });
 
-      workbook.SheetNames.forEach((sheetName) => {
-        const sheet = workbook.Sheets[sheetName];
-        const data = xlsx.utils.sheet_to_json(sheet, { header: 1 });
+    newUser
+      .save()
+      .then((newUser) => {
+        console.log(`User created ${newUser.name}`);
+        const newUsersId = newUser._id;
+        const newClients = [];
+        const newBills = [];
 
-        data.forEach((row) => {
-          lineCount++;
-          console.log(`Client nit: ${row[9]} name: ${row[10]}`);
+        if (req.file.mimetype.includes("excel")) {
+          const workbook = xlsx.read(req.file.buffer, { type: "buffer" });
+
+          workbook.SheetNames.forEach((sheetName) => {
+            const sheet = workbook.Sheets[sheetName];
+            const data = xlsx.utils.sheet_to_json(sheet, { header: 1 });
+
+            data.forEach((row) => {
+              const existingClient = newClients.find(
+                (client) => client.clientId === row[9]
+              );
+              let existingClientId, latestClientId;
+
+              if (existingClient) {
+                existingClientId = existingClient._id;
+              } else {
+                newClients.push(
+                  new Clients({
+                    clientName: row[10],
+                    clientId: row[9],
+                    user: newUsersId,
+                  })
+                );
+                latestClientId = newClients[newClients.length - 1]._id;
+              }
+
+              const existingBill = newBills.find(
+                (bill) => bill.billId === row[4]
+              );
+
+              if (!existingBill) {
+                newBills.push(
+                  new Bills({
+                    billId: row[4],
+                    amount: row[14],
+                    dueDate: row[0],
+                    client: existingClient ? existingClientId : latestClientId,
+                  })
+                );
+              }
+              lineCount++;
+            });
+
+            Clients.insertMany(newClients)
+              .then((savedClients) => {
+                console.log("Clients saved successfully:", savedClients);
+                Bills.insertMany(newBills)
+                  .then((savedBills) => {
+                    console.log("Bills saved successfully:", savedBills);
+                    return;
+                  })
+                  .catch((err) => console.error("Error saving bills:", err));
+                return;
+              })
+              .catch((err) => console.error("Error saving clients:", err));
+
+            //send email with password
+            console.log("now send email with password");
+            return;
+          });
+          //res.status(200).send(`File uploaded and processed successfully.${email}`);
           console.log(
-            `Bill ID: ${row[4]} amount: ${row[14]} dueDate: ${row[0]}`
+            `File uploaded and processed successfully ${lineCount} rows. email ${email}`
           );
-        });
+          return;
+        } else if (req.file.mimetype.includes("csv")) {
+          // Handle CSV file using csv-parser
+          const rows = [];
+
+          const bufferString = req.file.buffer.toString("utf8");
+          const stream = require("stream");
+          const readableStream = new stream.Readable();
+          readableStream._read = () => {};
+          readableStream.push(bufferString);
+          readableStream.push(null);
+
+          readableStream
+            .pipe(csvParser())
+            .on("data", (row) => {
+              if (
+                Object.values(row).some(
+                  (field) =>
+                    field !== "" && field !== null && field !== undefined
+                )
+              ) {
+                lineCount++;
+                console.log(
+                  `Client nit: ${row.nit_comprador} name: ${row.nom_comer_comprador}`
+                );
+                console.log(
+                  `Bill ID: ${row.numero_de_documento} amount: ${row.total_impuestos} dueDate: ${row.fecha_registro}`
+                );
+              } else {
+                //console.log("Skipped empty row");
+              }
+            })
+            .on("end", () => {
+              //   res
+              //     .status(200)
+              //     .send(`Number of lines read: ${lineCount} and email ${email}`);
+              console.log(
+                `Number of lines read: ${lineCount} and email ${email}`
+              );
+            });
+        } else {
+          //res.status(400).send("Unsupported file format. Please upload an Excel file.");
+        }
+      })
+      .catch((error) => {
+        console.log(`Error creating user ${error}`);
       });
-
-      //res.status(200).send(`File uploaded and processed successfully.${email}`);
-      console.log(
-        `File uploaded and processed successfully ${lineCount} rows. email ${email}`
-      );
-    } else if (req.file.mimetype.includes("csv")) {
-      // Handle CSV file using csv-parser
-      const rows = [];
-
-      const bufferString = req.file.buffer.toString("utf8");
-      const stream = require("stream");
-      const readableStream = new stream.Readable();
-      readableStream._read = () => {};
-      readableStream.push(bufferString);
-      readableStream.push(null);
-
-      readableStream
-        .pipe(csvParser())
-        .on("data", (row) => {
-          if (
-            Object.values(row).some(
-              (field) => field !== "" && field !== null && field !== undefined
-            )
-          ) {
-            lineCount++;
-            console.log(
-              `Client nit: ${row.nit_comprador} name: ${row.nom_comer_comprador}`
-            );
-            console.log(
-              `Bill ID: ${row.numero_de_documento} amount: ${row.total_impuestos} dueDate: ${row.fecha_registro}`
-            );
-          } else {
-            //console.log("Skipped empty row");
-          }
-        })
-        .on("end", () => {
-          //   res
-          //     .status(200)
-          //     .send(`Number of lines read: ${lineCount} and email ${email}`);
-          console.log(`Number of lines read: ${lineCount} and email ${email}`);
-        });
-    } else {
-      res
-        .status(400)
-        .send("Unsupported file format. Please upload an Excel file.");
-    }
   } catch (error) {
     console.error(error);
-    res.status(500).send("Internal Server Error");
+    //res.status(500).send("Internal Server Error");
+    return;
   }
 };
 

@@ -18,6 +18,7 @@
   },
   "homepage": "https://github.com/cor14095/cobrosia-backend#readme",
   "dependencies": {
+    "aws-sdk": "^2.1550.0",
     "cloudmailin": "^0.1.0",
     "cors": "^2.8.5",
     "csv-parser": "^3.0.0",

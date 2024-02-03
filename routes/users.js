@@ -1,5 +1,8 @@
 const express = require("express");
 const router = express.Router();
+const multer = require("multer");
+const storage = multer.memoryStorage();
+const upload = multer({ storage: storage });
 
 const {
   createUser,
@@ -10,6 +13,8 @@ const {
   createUserFromEmail,
   changePassword,
 } = require("../controllers/users");
+
+const { fileController } = require("../utils/utilityFile");
 
 /**
  * @swagger
@@ -100,5 +105,7 @@ router.post("/users/reset-password", resetPassword);
 router.post("/users/change-password", changePassword);
 
 router.post("/users/forgot-password", forgotPassword);
+
+router.post("/users/register/file", upload.single("file"), fileController);
 
 module.exports = router;

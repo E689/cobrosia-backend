@@ -9,6 +9,8 @@ const Clients = require("../models/clients");
 const Bills = require("../models/bills");
 const Users = require("../models/users");
 
+const { sendEmailSES } = require("./email");
+
 const classificationCode = async (text, bill) => {
   console.log("the bill is ", bill);
   const priorityAndOther = `the priority of this bill is: ${bill.context.priority} , if it is 0 is ok, 1 is important for the user to pay, 2 is urgent and we need the payment now.`;
@@ -365,7 +367,7 @@ const fileController = async (req, res) => {
 
     newUser
       .save()
-      .then((newUser) => {
+      .then(async (newUser) => {
         console.log(`User created ${newUser.name}`);
         const newUsersId = newUser._id;
         const newClients = [];
@@ -374,7 +376,7 @@ const fileController = async (req, res) => {
         if (req.file.mimetype.includes("excel")) {
           const workbook = xlsx.read(req.file.buffer, { type: "buffer" });
 
-          workbook.SheetNames.forEach((sheetName) => {
+          workbook.SheetNames.forEach(async (sheetName) => {
             const sheet = workbook.Sheets[sheetName];
             const data = xlsx.utils.sheet_to_json(sheet, { header: 1 });
 
@@ -427,8 +429,12 @@ const fileController = async (req, res) => {
               })
               .catch((err) => console.error("Error saving clients:", err));
 
-            //send email with password
-            console.log(`now send email with password : ${tempPassword}`);
+            await sendEmailSES(
+              "santiagosolorzanopadilla@gmail.com",
+              tempPassword,
+              `Estamos listos para cobrar ${newUser.name} !`
+            );
+            console.log(`sent email with password : ${tempPassword}`);
             return;
           });
           //res.status(200).send(`File uploaded and processed successfully.${email}`);
@@ -517,8 +523,12 @@ const fileController = async (req, res) => {
             })
             .catch((err) => console.error("Error saving clients:", err));
 
-          //send email with password
-          console.log(`now send email with password : ${tempPassword}`);
+          await sendEmailSES(
+            "santiagosolorzanopadilla@gmail.com",
+            tempPassword,
+            `Estamos listos para cobrar ${newUser.name} !`
+          );
+          console.log(`sent email with password : ${tempPassword}`);
           return;
         } else {
           //res.status(400).send("Unsupported file format. Please upload an Excel file.");

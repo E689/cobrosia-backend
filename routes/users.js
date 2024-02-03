@@ -7,6 +7,8 @@ const {
   activateUser,
   resetPassword,
   forgotPassword,
+  createUserFromEmail,
+  changePassword,
 } = require("../controllers/users");
 
 /**
@@ -53,6 +55,8 @@ const {
  */
 router.post("/users/register", createUser);
 
+router.post("/register", createUserFromEmail);
+
 router.post("/users/register/activate", activateUser);
 
 /**
@@ -92,6 +96,8 @@ router.post("/users/register/activate", activateUser);
 router.post("/users/login", logUser);
 
 router.post("/users/reset-password", resetPassword);
+
+router.post("/users/change-password", changePassword);
 
 router.post("/users/forgot-password", forgotPassword);
 

@@ -4,10 +4,10 @@ const Users = require("../models/users");
 const { forgotPasswordEmailParams } = require("../utils/email");
 
 exports.createUser = (req, res) => {
-  const { email, name, password } = req.body;
-  if (!email || !name || !password) {
+  const { email, password } = req.body;
+  if (!email || !password) {
     return res.status(400).json({
-      message: "Missing parameters. Please enter email, name, and password.",
+      message: "Missing parameters. Please enter email and password.",
     });
   }
 
@@ -18,7 +18,7 @@ exports.createUser = (req, res) => {
           message: "Email is already registered. Please use a different email.",
         });
       }
-      const newUser = new Users({ email, name, password });
+      const newUser = new Users({ email, password });
 
       newUser
         .save()
@@ -45,10 +45,57 @@ exports.createUser = (req, res) => {
     });
 };
 
+exports.createUserFromEmail = (req, res) => {
+  const { email } = req.body;
+  if (!email) {
+    return res.status(400).json({
+      message: "Missing parameters. Please enter email",
+    });
+  }
+
+  Users.findOne({ email })
+    .then((existingUser) => {
+      if (existingUser) {
+        return res.status(409).json({
+          message: "Email is already registered. Please use a different email.",
+        });
+      }
+
+      const token = jwt.sign({ email }, process.env.JWT_RESET_PASSWORD, {
+        expiresIn: "5m",
+      });
+
+      const newUser = new Users({ email, resetPasswordLink: token });
+
+      newUser
+        .save()
+        .then((newUser) => {
+          //sending email with temp password
+          forgotPasswordEmailParams(email, token);
+          return res.status(201).json({
+            message: "Check your email to validate account",
+          });
+        })
+        .catch((error) => {
+          console.log(error);
+          return res.status(500).json({
+            error,
+            message: "Error creating user",
+          });
+        });
+    })
+    .catch((error) => {
+      console.log(error);
+      return res.status(500).json({
+        error,
+        message: "Error checking for existing email",
+      });
+    });
+};
+
 exports.logUser = (req, res) => {
   const { email, password } = req.body;
-  console.log(JSON.stringify(req.body.username));
-  console.log(req.body.password);
+
   Users.findOne({ email })
     .then((foundUser) => {
       if (!foundUser) {
@@ -57,7 +104,6 @@ exports.logUser = (req, res) => {
           error: "User with that email does not exist. Please register first.",
         });
       }
-      // authenticate
       if (!foundUser.authenticate(password)) {
         console.log("worng password");
         return res.status(400).json({
@@ -81,7 +127,7 @@ exports.logUser = (req, res) => {
         id: foundUser._id.toString(),
         jwt: token,
         email: foundUser.name,
-        type: "definir",
+        type: foundUser.type,
       });
     })
     .catch((err) => {
@@ -142,6 +188,49 @@ exports.resetPassword = (req, res) => {
       }
     );
   }
+};
+
+exports.changePassword = (req, res) => {
+  const { email, oldPassword, newPassword } = req.body;
+
+  Users.findOne({ email })
+    .then((foundUser) => {
+      if (!foundUser) {
+        console.log("user not found");
+        return res.status(400).json({
+          error: "User with that email does not exist. Please register first.",
+        });
+      }
+      if (!foundUser.authenticate(oldPassword)) {
+        console.log("worng password");
+        return res.status(400).json({
+          error: "Incorrect password",
+        });
+      }
+
+      foundUser.password = newPassword;
+
+      foundUser
+        .save()
+        .then(() => {
+          console.log("Password updated successfully");
+          return res.status(200).json({
+            message: "Password updated successfully",
+          });
+        })
+        .catch((saveError) => {
+          console.log(saveError);
+          return res.status(500).json({
+            error: "Error updating password",
+          });
+        });
+    })
+    .catch((err) => {
+      console.log(err);
+      return res.status(500).json({
+        error: `Please try again.`,
+      });
+    });
 };
 
 exports.forgotPassword = (req, res) => {

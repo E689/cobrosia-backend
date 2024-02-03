@@ -37,13 +37,13 @@ exports.createBill = (req, res) => {
               user: user,
               msg: `Estimado ${bill.client.clientName} tiene una factura numero ${bill.billId} por un monto de Q ${bill.amount} pendiente de pago.`,
             };
-            fetch("https://api.ultramsg.com/instance68922/messages/chat", {
+            fetch(process.env.ULTRAMSG_URL, {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",
               },
               body: JSON.stringify({
-                token: "t1byq90j0ln61sw9",
+                token: process.env.ULTRAMSG_TOKEN,
                 to: `+502${bill.client.phone}`,
                 body: `${logEntry.msg}`,
               }),

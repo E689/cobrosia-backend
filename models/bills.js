@@ -34,6 +34,10 @@ const billsSchema = new mongoose.Schema(
       },
     },
     log: [{ user: String, msg: String }],
+    ai: {
+      type: Boolean,
+      default: false,
+    },
     client: { type: ObjectId, ref: "Clients" },
   },
   { timestamps: true }

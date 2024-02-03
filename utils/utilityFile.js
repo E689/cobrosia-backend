@@ -152,13 +152,13 @@ const getLogByPhone = (phone, msg) => {
 
           const { text, options } = await classificationCode(msg, bill);
 
-          fetch("https://api.ultramsg.com/instance68922/messages/chat", {
+          fetch(process.env.ULTRAMSG_URL, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
             },
             body: JSON.stringify({
-              token: "t1byq90j0ln61sw9",
+              token: process.env.ULTRAMSG_TOKEN,
               to: `+502${phone}`,
               body: `${text}`,
             }),
@@ -242,13 +242,13 @@ const logController = (req, res) => {
           user: user,
           msg: generatedText,
         };
-        fetch("https://api.ultramsg.com/instance68922/messages/chat", {
+        fetch(process.env.ULTRAMSG_URL, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            token: "t1byq90j0ln61sw9",
+            token: process.env.ULTRAMSG_TOKEN,
             to: `+502${bill.client.phone}`,
             body: `${generatedText}`,
           }),
@@ -291,13 +291,13 @@ const mensajeController = async (req, res) => {
 
   // const respuesta = await funcionCatchy(lastMessage);
   // console.log("la respuesta es", respuesta);
-  // fetch("https://api.ultramsg.com/instance68922/messages/chat", {
+  // fetch(process.env.ULTRAMSG_URL, {
   //   method: "POST",
   //   headers: {
   //     "Content-Type": "application/json",
   //   },
   //   body: JSON.stringify({
-  //     token: "t1byq90j0ln61sw9",
+  //     token: process.env.ULTRAMSG_TOKEN,
   //     to: "+50248274591",
   //     body: respuesta,
   //   }),

@@ -18,6 +18,7 @@
   },
   "homepage": "https://github.com/cor14095/cobrosia-backend#readme",
   "dependencies": {
+    "cloudmailin": "^0.1.0",
     "cors": "^2.8.5",
     "csv-parser": "^3.0.0",
     "dotenv": "^16.3.1",

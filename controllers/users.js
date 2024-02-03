@@ -80,6 +80,8 @@ exports.logUser = (req, res) => {
         name: foundUser.name,
         id: foundUser._id.toString(),
         jwt: token,
+        email: foundUser.name,
+        type: "definir",
       });
     })
     .catch((err) => {
@@ -146,8 +148,6 @@ exports.forgotPassword = (req, res) => {
   const { email } = req.body;
   Users.findOne({ email })
     .then((user) => {
-      console.log("found user", user);
-
       const token = jwt.sign(
         { _id: user._id },
         process.env.JWT_RESET_PASSWORD,
@@ -156,25 +156,13 @@ exports.forgotPassword = (req, res) => {
         }
       );
 
-      const params = forgotPasswordEmailParams(email, token);
       user
         .updateOne({ resetPasswordLink: token })
         .then((user) => {
-          const sendEmail = ses
-            .sendEmail(params)
-            .promise()
-            .then((data) => {
-              console.log("ses reset pw ", data);
-              return res.json({
-                message: `Email sent to ${email}. Click on the link to reset your password`,
-              });
-            })
-            .catch((error) => {
-              console.log("error ", error);
-              return res.status(400).json({
-                message: "Password reset failed",
-              });
-            });
+          forgotPasswordEmailParams(email, token);
+          return res.status(200).json({
+            message: "Email sent",
+          });
         })
         .catch((error) => {
           console.log("error ", error);

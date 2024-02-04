@@ -69,7 +69,33 @@ const {
 router.post("/clients", createClient);
 /**
  * @swagger
- * /clients/:id:
+ * /clients/{id}:
+ *   get:
+ *     summary: Get clients from user
+ *     description:  Get clients from user
+ *     tags:
+ *       - Clients
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: The ID of the user.
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Successful response
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/models/Clients'
+ *       500:
+ *         description: Internal error
+ */
+router.get("/clients/:id", getClientsByUser);
+/**
+ * @swagger
+ * /clients/{id}:
  *   put:
  *     summary: edit client
  *     description:  edit client
@@ -95,7 +121,7 @@ router.post("/clients", createClient);
 router.put("/clients/:id", updateClient);
 /**
  * @swagger
- * /clients/:id:
+ * /clients/{id}:
  *   delete:
  *     summary: delete client
  *     description: delete client
@@ -119,31 +145,5 @@ router.put("/clients/:id", updateClient);
  *         description: Internal error
  */
 router.delete("/clients/:id", deleteClient);
-/**
- * @swagger
- * /clients/{id}:
- *   get:
- *     summary: Get clients from user
- *     description:  Get clients from user
- *     tags:
- *       - Clients
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         description: The ID of the user.
- *         schema:
- *           type: string
- *     responses:
- *       200:
- *         description: Successful response
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/models/Clients'
- *       500:
- *         description: Internal error
- */
-router.get("/clients/:id", getClientsByUser);
 
 module.exports = router;

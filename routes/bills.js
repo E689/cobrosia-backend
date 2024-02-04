@@ -7,68 +7,66 @@ const {
   deleteBill,
   updateBill,
   getLogByBillId,
-  revisarBills,
 } = require("../controllers/bills");
 
 /**
  * @swagger
  * /bills:
  *   post:
- *     summary: Create a client with contact
- *     description: Create a client and set its contact
+ *     summary: Create a new bill
+ *     description: Create a new bill and send messages for pending bills.
  *     tags:
  *       - Bills
+ *     consumes:
+ *       - application/json
  *     parameters:
  *       - in: body
- *         name: amount
+ *         name: createBillRequest
+ *         description: Request object for creating a new bill.
  *         required: true
- *         description: amount of bill.
  *         schema:
- *           type: string
- *       - in: body
- *         name: dueDate
- *         required: true
- *         description: due date of bill
- *         schema:
- *           type: string
- *       - in: body
- *         name: status
- *         required: true
- *         description: status of bill
- *         schema:
- *           type: string
- *       - in: body
- *         name: clientId
- *         required: true
- *         description: clientId of client that owns the bill
- *         schema:
- *           type: string
- *       - in: body
- *         name: billId
- *         required: true
- *         description: id of bill
- *         schema:
- *           type: string
+ *           type: object
+ *           properties:
+ *             amount:
+ *               type: number
+ *             dueDate:
+ *               type: string
+ *               format: date
+ *             status:
+ *               type: string
+ *             clientId:
+ *               type: string
+ *             billId:
+ *               type: string
+ *             context:
+ *               type: string
  *     responses:
- *       201:
- *         description: Successful response
- *         content:
+ *       200:
+ *         description: Messages for bills sent
+ *         examples:
  *           application/json:
- *             schema:
- *               Users
+ *             message: Messages for bills sent
+ *             bills: []
  *       400:
- *         description: Missing parameters
+ *         description: Missing parameters. Please enter amount, dueDate, status, clientId.
+ *         examples:
+ *           application/json:
+ *             message: Missing parameters. Please enter amount, dueDate, status, clientId.
  *       500:
- *         description: Internal error
- *
+ *         description: Error creating bill or messaging for bills.
+ *         examples:
+ *           application/json:
+ *             error: Error creating bill or messaging for bills.
+ *             message: Error creating bill or messaging for bills.
  */
 router.post("/bills", createBill);
+
 /**
  * @swagger
- * /bills/:id:
+ * /bills/{id}:
  *   get:
- *     summary: Get bills from user
- *     description:  Get bills from user
+ *     summary: Get bills by user ID
+ *     description: Retrieve bills associated with a specific user ID.
  *     tags:
  *       - Bills
  *     parameters:
@@ -80,73 +78,26 @@ router.post("/bills", createBill);
  *           type: string
  *     responses:
  *       200:
- *         description: Successful response
- *         content:
+ *         description: Bills from client retrieved
+ *         examples:
  *           application/json:
- *             schema:
- *               $ref: '#/models/Bills'
+ *             bills: []
+ *             message: Bills from client retrieved
  *       500:
- *         description: Internal error
+ *         description: Error finding bills
+ *         examples:
+ *           application/json:
+ *             error: Error finding bills
+ *             message: Error finding bills
  */
 router.get("/bills/:id", getBillsByUserId);
+
 /**
  * @swagger
- * /bills/:id:
- *   delete:
- *     summary: delete bill
- *     description:  delete bill
- *     tags:
- *       - Bills
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         description: The ID of the bill.
- *         schema:
- *           type: string
- *     responses:
- *       200:
- *         description: Successful response
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/models/Bills'
- *       500:
- *         description: Internal error
- */
-router.delete("/bills/:id", deleteBill);
-/**
- * @swagger
- * /bills/:id:
- *   put:
- *     summary: update bill
- *     description:  update bill
- *     tags:
- *       - Bills
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         description: The ID of the bill.
- *         schema:
- *           type: string
- *     responses:
- *       200:
- *         description: Successful response
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/models/Bills'
- *       500:
- *         description: Internal error
- */
-router.put("/bills/:id", updateBill);
-/**
- * @swagger
- * /bills/log/:id:
+ * /bills/log/{id}:
  *   get:
- *     summary: Get log from bill
- *     description: billId for log
+ *     summary: Get log by bill ID
+ *     description: Retrieve log entries associated with a specific bill ID.
  *     tags:
  *       - Bills
  *     parameters:
@@ -158,14 +109,115 @@ router.put("/bills/:id", updateBill);
  *           type: string
  *     responses:
  *       200:
- *         description: Successful response
- *         content:
+ *         description: Log from bill retrieved
+ *         examples:
  *           application/json:
- *             schema:
- *               $ref: '#/models/Bills'
+ *             log: []
+ *             message: Log from bill retrieved
  *       500:
- *         description: Internal error
+ *         description: Error finding bill
+ *         examples:
+ *           application/json:
+ *             error: Error finding bill
+ *             message: Error finding bill
  */
 router.get("/bills/log/:id", getLogByBillId);
+
+/**
+ * @swagger
+ * /bills/{id}:
+ *   put:
+ *     summary: Update a bill
+ *     description: Update details of a specific bill.
+ *     tags:
+ *       - Bills
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: The ID of the bill.
+ *         schema:
+ *           type: string
+ *       - in: body
+ *         name: updateBillRequest
+ *         description: Request object for updating a bill.
+ *         required: true
+ *         schema:
+ *           type: object
+ *           properties:
+ *             amount:
+ *               type: number
+ *             dueDate:
+ *               type: string
+ *               format: date
+ *             status:
+ *               type: string
+ *             clientId:
+ *               type: string
+ *             billId:
+ *               type: string
+ *             context:
+ *               type: string
+ *     responses:
+ *       200:
+ *         description: Bill updated
+ *         examples:
+ *           application/json:
+ *             message: Bill updated
+ *             bill: {}
+ *       404:
+ *         description: Bill not found
+ *         examples:
+ *           application/json:
+ *             message: Bill not found
+ *       500:
+ *         description: Error updating bill
+ *         examples:
+ *           application/json:
+ *             error: Error updating bill
+ *             message: Error updating bill
+ */
+router.put("/bills/:id", updateBill);
+
+/**
+ * @swagger
+ * /bills/{id}:
+ *   delete:
+ *     summary: Delete a bill
+ *     description: Delete a specific bill by its ID.
+ *     tags:
+ *       - Bills
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: The ID of the bill to be deleted.
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Bill deleted
+ *         examples:
+ *           application/json:
+ *             message: Bill deleted
+ *             deletedBill: {}
+ *       400:
+ *         description: Missing parameter. Please provide billId.
+ *         examples:
+ *           application/json:
+ *             message: Missing parameter. Please provide billId.
+ *       404:
+ *         description: Bill not found
+ *         examples:
+ *           application/json:
+ *             message: Bill not found
+ *       500:
+ *         description: Error deleting bill
+ *         examples:
+ *           application/json:
+ *             error: Error deleting bill
+ *             message: Error deleting bill
+ */
+router.delete("/bills/:id", deleteBill);
 
 module.exports = router;

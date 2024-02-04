@@ -129,17 +129,13 @@ const classifyMessage = async (msg) => {
 };
 
 const getLogByPhone = (phone, msg) => {
-  //console.log("the client is", phone);
-  //console.log("the message is", msg);
   Clients.findOne({ phone })
     .then((foundClient) => {
-      console.log("client found");
       Bills.find({
         $and: [{ client: foundClient._id }, { status: { $in: ["0", "1"] } }],
       }).then(async (bills) => {
         bills.forEach(async (bill) => {
           if (bill.status === "2") {
-            console.log("bill is paid found");
             return;
           }
 

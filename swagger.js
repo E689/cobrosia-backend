@@ -3,28 +3,34 @@ const swaggerJsdoc = require("swagger-jsdoc");
 const options = {
   swaggerDefinition: {
     info: {
-      title: "COBROS IA",
+      title: "Cobros AI",
       version: "1.0.0",
-      description: "API documentation for COBROS IA",
+      description:
+        "Here are listed the available endpoints for User, Client, Bill and AI Billing Flows manipulation.",
     },
     basePath: "/api/",
     tags: [
       {
         name: "Users",
-        description: "Operations related to user",
+        description: "Create, Update and Read users.",
       },
       {
         name: "Clients",
-        description: "Operations related to clients",
-      },
-      {
-        name: "Contacts",
-        description: "Operations related to contacts",
+        description: "Creat, List, Update and Delete clients.",
       },
       {
         name: "Bills",
-        description: "Operations related to bills",
+        description:
+          "Create, List, Update and Delete bills belonging to clients.",
       },
+      {
+        name: "BillingFlows",
+        description: "AI billing flows associated to the clients bills.",
+      },
+      // {
+      //   name: "Contacts",
+      //   description: "Operations related to contacts",
+      // },
     ],
     securityDefinitions: {
       apiKeyAuth: {

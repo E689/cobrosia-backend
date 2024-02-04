@@ -10,7 +10,6 @@ const {
   activateUser,
   resetPassword,
   forgotPassword,
-  createUserFromEmail,
   changePassword,
 } = require("../controllers/users");
 
@@ -20,49 +19,84 @@ const { fileController } = require("../utils/utilityFile");
  * @swagger
  * /users/register:
  *   post:
- *     summary: Create user
+ *     summary: Create user with email and password
  *     description: Register a new user to the db
  *     tags:
  *       - Users
  *     parameters:
  *       - in: body
- *         name: name
+ *         name: data
+ *         description: User credentials for login.
  *         required: true
- *         description: name of new user.
  *         schema:
- *           type: string
- *       - in: body
- *         name: email
- *         required: true
- *         description: unique email of new user.
- *         schema:
- *           type: string
- *       - in: body
- *         name: password
- *         required: true
- *         description: plain password.
- *         schema:
- *           type: string
+ *           type: object
+ *           properties:
+ *             email:
+ *               type: string
+ *             password:
+ *               type: string
  *     responses:
  *       201:
- *         description: Successful response
- *         content:
- *           application/json:
- *             schema:
- *               Users
- *       400:
- *         description: Missing parameters
+ *         description: Successful user creation
+ *         examples:
+ *           application/json: { message: "User created", user: {  "name": "newUsersName", "id": "newUsersId"} }
  *       409:
- *         description: Duplicated email
+ *         description: Email is already registered
+ *         examples:
+ *           application/json:
+ *             message: "Email is already registered. Please use a different email."
  *       500:
  *         description: Internal error
+ *         examples:
+ *           application/json: {error : "error description", message: "Error creating user"}
  *
  */
 router.post("/users/register", createUser);
 
-router.post("/register", createUserFromEmail);
-
-router.post("/users/register/activate", activateUser);
+/**
+ * @swagger
+ * /users/register/file:
+ *   post:
+ *     summary: Register user with file
+ *     description: Register a user and process an uploaded file.
+ *     tags:
+ *       - Users
+ *     consumes:
+ *       - multipart/form-data
+ *     parameters:
+ *       - in: formData
+ *         name: email
+ *         type: string
+ *         required: true
+ *         description: Email of the user.
+ *       - in: formData
+ *         name: file
+ *         type: file
+ *         required: true
+ *         description: Excel or CSV file to process.
+ *     responses:
+ *       200:
+ *         description: File received. Processing started.
+ *         examples:
+ *           application/json:
+ *             message: File received. Processing started.
+ *       400:
+ *         description: Bad request or unsupported file format.
+ *         examples:
+ *           application/json:
+ *             error: Bad request or unsupported file format.
+ *       409:
+ *         description: Email is already registered. Please use a different email.
+ *         examples:
+ *           application/json:
+ *             message: Email is already registered. Please use a different email.
+ *       500:
+ *         description: Internal Server Error
+ *         examples:
+ *           application/json:
+ *             error: Internal Server Error
+ */
+router.post("/users/register/file", upload.single("file"), fileController);
 
 /**
  * @swagger
@@ -84,17 +118,16 @@ router.post("/users/register/activate", activateUser);
  *           properties:
  *             email:
  *               type: string
- *               description: Email of the user.
  *             password:
  *               type: string
- *               description: Plain password to verify with the saved hashed password.
+ *     produces:
+ *        - application/json
+ *        - text/csv
  *     responses:
  *       200:
- *         description: Successful response
- *         content:
- *           application/json:
- *             schema:
- *               Users
+ *         description: Successful login
+ *         examples:
+ *           application/json: { "id": "65bfbc5507b", "jwt": "eyJhbGciOiJIUzI1NiIsiI2NWJmYmM1NTFiOWRiNDVlNmM1N2IiLCJpYXQiOjE3MDcwNjQ4NzAsImV4cJmtsI", "email": "user@mail.com", "type": 0 }
  *       400:
  *         description: Missing parameters
  *       500:
@@ -102,89 +135,88 @@ router.post("/users/register/activate", activateUser);
  */
 router.post("/users/login", logUser);
 
-router.post("/users/reset-password", resetPassword);
 /**
  * @swagger
  * /users/change-password:
- *   post:
- *     summary: change password
- *     description: Verify and log a user.
+ *   put:
+ *     summary: Change user password
+ *     description: Change the password for a user.
  *     tags:
  *       - Users
  *     consumes:
  *       - application/json
  *     parameters:
  *       - in: body
- *         name: userCredentials
- *         description: User credentials for login.
+ *         name: changePasswordRequest
+ *         description: Request object for changing the user's password.
  *         required: true
  *         schema:
  *           type: object
  *           properties:
  *             email:
  *               type: string
- *               description: Email of the user.
- *             password:
+ *             oldPassword:
  *               type: string
- *               description: Plain password to verify with the saved hashed password.
+ *             newPassword:
+ *               type: string
  *     responses:
  *       200:
- *         description: Successful response
- *         content:
+ *         description: Password updated successfully
+ *         examples:
  *           application/json:
- *             schema:
- *               Users
+ *             message: Password updated successfully
  *       400:
- *         description: Missing parameters
+ *         description: User with that email does not exist or incorrect password.
+ *         examples:
+ *           application/json:
+ *             error: User with that email does not exist or incorrect password.
  *       500:
- *         description: Internal error
+ *         description: Error updating password or internal server error.
+ *         examples:
+ *           application/json:
+ *             error: Error updating password or internal server error.
  */
-router.post("/users/change-password", changePassword);
-
-router.post("/users/forgot-password", forgotPassword);
+router.put("/users/change-password", changePassword);
 
 /**
  * @swagger
- * /users/register/file:
+ * /users/forgot-password:
  *   post:
- *     summary: create user with user and file
- *     description: send an email and a csv or xlx to create a new user
+ *     summary: Request password reset
+ *     description: Initiate the password reset process by sending an email with a new password.
  *     tags:
  *       - Users
+ *     consumes:
+ *       - application/json
  *     parameters:
  *       - in: body
- *         name: name
+ *         name: forgotPasswordRequest
+ *         description: Request object for initiating password reset.
  *         required: true
- *         description: name of new user.
  *         schema:
- *           type: string
- *       - in: body
- *         name: email
- *         required: true
- *         description: unique email of new user.
- *         schema:
- *           type: string
- *       - in: body
- *         name: password
- *         required: true
- *         description: plain password.
- *         schema:
- *           type: string
+ *           type: object
+ *           properties:
+ *             email:
+ *               type: string
  *     responses:
- *       201:
- *         description: Successful response
- *         content:
+ *       200:
+ *         description: Email sent
+ *         examples:
  *           application/json:
- *             schema:
- *               Users
+ *             message: Email sent
  *       400:
- *         description: Missing parameters
- *       409:
- *         description: Duplicated email
- *       500:
- *         description: Internal error
- *
+ *         description: Password reset failed or invalid request.
+ *         examples:
+ *           application/json:
+ *             message: Password reset failed or invalid request.
+ *       401:
+ *         description: User not found.
+ *         examples:
+ *           application/json:
+ *             error: User not found.
  */
-router.post("/users/register/file", upload.single("file"), fileController);
+router.post("/users/forgot-password", forgotPassword);
+
+router.post("/users/reset-password", resetPassword);
 
 module.exports = router;

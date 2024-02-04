@@ -17,12 +17,12 @@ const ses = new AWS.SES({ apiVersion: "2010-12-01" });
 exports.forgotPasswordEmailParams = async (email, token) => {
   const response = await client.sendMessage({
     to: email,
-    from: "test@example.com",
-    plain: "test message",
+    from: "test@uim.com.gt",
+    plain: `your reset link is: ${token}`,
     html: `<h1>your reset link is: ${token}</h1>`,
-    subject: "hello world",
+    subject: "Forgot password",
   });
-  console.log("email sent");
+  console.log("email sent from cloudmail");
   return;
 };
 

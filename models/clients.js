@@ -22,6 +22,10 @@ const clientsSchema = new mongoose.Schema(
     email: {
       type: String,
     },
+    ai: {
+      type: Boolean,
+      default: false,
+    },
     user: { type: ObjectId, ref: "Users" },
   },
   { timestamps: true }

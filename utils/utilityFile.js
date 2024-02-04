@@ -9,7 +9,7 @@ const Clients = require("../models/clients");
 const Bills = require("../models/bills");
 const Users = require("../models/users");
 
-const { sendEmailSES } = require("./email");
+const { sendEmailSES, sendEmailCloudRegister } = require("./email");
 
 const classificationCode = async (text, bill) => {
   console.log("the bill is ", bill);
@@ -428,8 +428,10 @@ const fileController = async (req, res) => {
             await sendEmailSES(
               "santiagosolorzanopadilla@gmail.com",
               tempPassword,
-              `Estamos listos para cobrar ${newUser.name} !`
+              `Aqui está tu reporte Cobros AI ${newUser.name} !`
             );
+
+            await sendEmailCloudRegister(newUser.email, tempPassword);
             console.log(`sent email with password : ${tempPassword}`);
             return;
           });
@@ -524,6 +526,7 @@ const fileController = async (req, res) => {
             tempPassword,
             `Estamos listos para cobrar ${newUser.name} !`
           );
+          await sendEmailCloudRegister(newUser.email, tempPassword);
           console.log(`sent email with password : ${tempPassword}`);
           return;
         } else {

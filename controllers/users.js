@@ -1,7 +1,7 @@
 const jwt = require("jsonwebtoken");
 const { expressjwt: ejwt } = require("express-jwt");
 const Users = require("../models/users");
-const { forgotPasswordEmailParams } = require("../utils/email");
+const { sendEmailCloud } = require("../utils/email");
 
 exports.createUser = (req, res) => {
   const { email, password } = req.body;
@@ -25,7 +25,6 @@ exports.createUser = (req, res) => {
         .then((newUser) => {
           return res.status(201).json({
             message: "User created",
-            user: { name: newUser.name, id: newUser._id },
           });
         })
         .catch((error) => {
@@ -148,7 +147,7 @@ exports.forgotPassword = (req, res) => {
       user
         .updateOne({ resetPasswordLink: token })
         .then((user) => {
-          forgotPasswordEmailParams(email, token);
+          sendEmailCloud(email, token);
           return res.status(200).json({
             message: "Email sent",
           });

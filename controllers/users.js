@@ -126,7 +126,7 @@ exports.logUser = (req, res) => {
         name: foundUser.name,
         id: foundUser._id.toString(),
         jwt: token,
-        email: foundUser.name,
+        email: foundUser.email,
         type: foundUser.type,
       });
     })

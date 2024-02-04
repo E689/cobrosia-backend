@@ -121,7 +121,7 @@ router.put("/clients/:id", updateClient);
 router.delete("/clients/:id", deleteClient);
 /**
  * @swagger
- * /clients/:id:
+ * /clients/{id}:
  *   get:
  *     summary: Get clients from user
  *     description:  Get clients from user

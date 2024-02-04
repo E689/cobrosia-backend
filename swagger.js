@@ -26,6 +26,13 @@ const options = {
         description: "Operations related to bills",
       },
     ],
+    securityDefinitions: {
+      apiKeyAuth: {
+        type: "apiKey",
+        in: "header", // Can be "header", "query", or "cookie"
+        name: "Authorization", // Name of the header, query parameter, or cookie to be used
+      },
+    },
   },
   apis: ["./routes/*.js"],
 };

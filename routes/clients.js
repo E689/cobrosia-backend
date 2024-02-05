@@ -108,6 +108,17 @@ router.get("/clients/:id", getClientsByUser);
  *         description: The ID of the client.
  *         schema:
  *           type: string
+ *       - in: body
+ *         name: data
+ *         description: User credentials for login.
+ *         required: true
+ *         schema:
+ *           type: object
+ *           properties:
+ *             clientName:
+ *               type: string
+ *             ai:
+ *               type: boolean
  *     responses:
  *       200:
  *         description: Successful response

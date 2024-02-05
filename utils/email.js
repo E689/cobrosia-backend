@@ -26,6 +26,18 @@ exports.sendEmailCloud = async (email, token) => {
   return;
 };
 
+exports.sendEmailCloudParams = async (email, params) => {
+  const response = await client.sendMessage({
+    to: email,
+    from: "cobrosai@uim.com.gt",
+    plain: params.content,
+    html: params.content,
+    subject: params.subject,
+  });
+  console.log("Email sent from cloudmail");
+  return;
+};
+
 exports.sendEmailCloudRegister = async (email, token) => {
   const response = await client.sendMessage({
     to: email,

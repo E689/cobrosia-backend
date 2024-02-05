@@ -90,14 +90,22 @@ exports.getBillsByUserId = (req, res) => {
   Clients.find({ user: userId })
     .then((clients) => {
       const clientIds = clients.map((client) => client._id);
-      return Bills.find({ client: { $in: clientIds } }).populate(
-        "client",
-        "clientName"
-      );
+      return Bills.find({ client: { $in: clientIds } }).populate("client");
     })
     .then((bills) => {
+      const refactoredBills = bills.map((bill) => ({
+        billId: bill.billId,
+        date: bill.date,
+        amount: bill.amount,
+        status: bill.status,
+        creditDays: bill.client.creditDays,
+        log: bill.log,
+        clientName: bill.client.clientName,
+        clientId: bill.client.clientId,
+      }));
+
       return res.status(200).json({
-        bills,
+        bills: refactoredBills,
         message: "bills from client retrieved",
       });
     })

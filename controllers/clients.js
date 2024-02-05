@@ -1,5 +1,6 @@
 const Clients = require("../models/clients");
 const Bills = require("../models/bills");
+const { sendEmailCloudRegister } = require("../utils/email");
 
 exports.createClient = (req, res) => {
   const { clientName, userId, contactName, contactLastName, phone, email } =
@@ -96,6 +97,49 @@ exports.getClients = (req, res) => {
 };
 
 exports.updateClient = (req, res) => {
+  const clientId = req.params.id;
+  const updatedFields = req.body;
+  const { ai } = updatedFields;
+
+  if (!clientId) {
+    return res.status(400).json({
+      message: "Missing clientId parameter",
+    });
+  }
+
+  const updateClientPromise = Clients.findByIdAndUpdate(
+    clientId,
+    updatedFields,
+    { new: true }
+  );
+
+  const updateBillsPromise = ai
+    ? Bills.updateMany({ client: clientId }, { ai: true })
+    : Promise.resolve(null);
+
+  Promise.all([updateClientPromise, updateBillsPromise])
+    .then(([updatedClient, _]) => {
+      if (!updatedClient) {
+        return res.status(404).json({
+          message: "Client not found",
+        });
+      }
+
+      return res.status(200).json({
+        message: "Client updated",
+        updatedClient,
+      });
+    })
+    .catch((error) => {
+      console.log(error);
+      return res.status(500).json({
+        error,
+        message: "Error updating client",
+      });
+    });
+};
+
+exports.updateClientDep = (req, res) => {
   const clientId = req.params.id;
   const { clientName, contactName, contactLastName, phone, email } = req.body;
 

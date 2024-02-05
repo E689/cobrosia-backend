@@ -371,11 +371,11 @@ const fileController = async (req, res) => {
 
         if (req.file.mimetype.includes("excel")) {
           const workbook = xlsx.read(req.file.buffer, { type: "buffer" });
-
+          let isFirstRow = true;
           workbook.SheetNames.forEach(async (sheetName) => {
             const sheet = workbook.Sheets[sheetName];
             const data = xlsx.utils.sheet_to_json(sheet, { header: 1 });
-            let isFirstRow = true;
+
             if (isFirstRow) {
               isFirstRow = false;
               return;

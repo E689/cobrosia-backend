@@ -236,8 +236,10 @@ exports.forgotPassword = (req, res) => {
       //   }
       // );
 
+      user.password = tempPassword;
+
       user
-        .updateOne({ password: tempPassword })
+        .save()
         .then(async (user) => {
           await sendEmailCloud(email, tempPassword);
           return res.status(200).json({

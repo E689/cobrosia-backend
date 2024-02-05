@@ -17,9 +17,9 @@ const ses = new AWS.SES({ apiVersion: "2010-12-01" });
 exports.sendEmailCloud = async (email, token) => {
   const response = await client.sendMessage({
     to: email,
-    from: "test@uim.com.gt",
+    from: "cobrosai@uim.com.gt",
     plain: `your reset link is: ${token}`,
-    html: `<h1>your reset link is: ${token}</h1>`,
+    html: `<h1>PONER EL PASSWORD NO EL LINK ${token}</h1>`,
     subject: "Forgot password",
   });
   console.log("email sent from cloudmail");
@@ -29,9 +29,9 @@ exports.sendEmailCloud = async (email, token) => {
 exports.sendEmailCloudRegister = async (email, token) => {
   const response = await client.sendMessage({
     to: email,
-    from: "test@uim.com.gt",
+    from: "cobrosai@uim.com.gt",
     plain: `Gracias por usar Cobros AI. \n Adjunto tu reporte de Facturas y Clientes. En este podrias ver todas tus facturas y clientes listas para revisar datos y comenzar a utilizar el seguimiento AI.\n Accede al tablero con vistas, tablas y muchos mas. Gratis por una hora. En cobros.ai usa esta direccion de  email y la contraseña temporal de abajo: \n ${token}`,
-    html: `<h1> Gracias por usar Cobros AI.</h1> \n <h2> Adjunto tu reporte de Facturas y Clientes. En este podrias ver todas tus facturas y clientes listas para revisar datos y comenzar a utilizar el seguimiento AI.</h2>\n <h2> Accede al tablero con vistas, tablas y muchos mas.</h2> <h2> Gratis por una hora. En cobros.ai usa esta direccion de  email y la contraseña temporal de abajo:</h2> <h1> \n ${token} </h1`,
+    html: `<h1> Gracias por usar Cobros AI.</h1> \n <h2> Adjunto tu reporte de Facturas y Clientes. En este podrias ver todas tus facturas y clientes listas para revisar datos y comenzar a utilizar el seguimiento AI.</h2>\n <h2> Accede al tablero con vistas, tablas y muchos mas.</h2> <h2> Gratis por una hora. En cobros.ai usa tu direccion de  email y la contraseña temporal de abajo:</h2> <h1> \n ${token} </h1`,
     subject: "Aqui esta tu reporte Cobros AI",
   });
   console.log("email sent from cloudmail");

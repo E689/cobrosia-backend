@@ -11,6 +11,7 @@ const {
   resetPassword,
   forgotPassword,
   changePassword,
+  createUserWithBill,
 } = require("../controllers/users");
 
 const { fileController } = require("../utils/utilityFile");
@@ -97,6 +98,61 @@ router.post("/users/register", createUser);
  *             error: Internal Server Error
  */
 router.post("/users/register/file", upload.single("file"), fileController);
+
+/**
+ * @swagger
+ * /users/register/bill:
+ *   post:
+ *     summary: Register user with bill
+ *     description: Register a user with email and bill.
+ *     tags:
+ *       - Users
+ *     consumes:
+ *       - application/json
+ *     parameters:
+ *       - in: body
+ *         name: data
+ *         description: User email and bill data.
+ *         required: true
+ *         schema:
+ *           type: object
+ *           properties:
+ *             email:
+ *               type: string
+ *             billId:
+ *               type: string
+ *             amount:
+ *               type: string
+ *             dueDate:
+ *               type: string
+ *             clientId:
+ *               type: string
+ *             clientName:
+ *               type: string
+ *     responses:
+ *       201:
+ *         description: File received. Processing started.
+ *         examples:
+ *           application/json:
+ *             message: User created. Check email.
+ *       400:
+ *         description: Missing parameters.
+ *         examples:
+ *           application/json:
+ *             error: Missing parameters.
+ *       409:
+ *         description: Email is already registered. Please use a different email.
+ *         examples:
+ *           application/json:
+ *             message: Email is already registered. Please use a different email.
+ *       500:
+ *         description: Internal Server Error
+ *         examples:
+ *           application/json:
+ *             error: Internal Server Error
+ *             message: Error creating user, client, or bill.
+ */
+router.post("/users/register/bill", createUserWithBill);
 
 /**
  * @swagger

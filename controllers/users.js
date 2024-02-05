@@ -1,7 +1,10 @@
 const jwt = require("jsonwebtoken");
 const { expressjwt: ejwt } = require("express-jwt");
+const crypto = require("crypto");
 const Users = require("../models/users");
-const { sendEmailCloud } = require("../utils/email");
+const Clients = require("../models/clients");
+const Bills = require("../models/bills");
+const { sendEmailCloudRegister } = require("../utils/email");
 
 exports.createUser = (req, res) => {
   const { email, password } = req.body;
@@ -26,6 +29,92 @@ exports.createUser = (req, res) => {
           return res.status(201).json({
             message: "User created",
           });
+        })
+        .catch((error) => {
+          console.log(error);
+          return res.status(500).json({
+            error,
+            message: "Error creating user",
+          });
+        });
+    })
+    .catch((error) => {
+      console.log(error);
+      return res.status(500).json({
+        error,
+        message: "Error checking for existing email",
+      });
+    });
+};
+
+exports.createUserWithBill = (req, res) => {
+  const { email, billId, amount, dueDate, clientId, clientName } = req.body;
+  if (!email || !billId || !amount || !dueDate || !clientId || !clientName) {
+    return res.status(400).json({
+      message: "Missing parameters.",
+    });
+  }
+
+  Users.findOne({ email })
+    .then((existingUser) => {
+      if (existingUser) {
+        return res.status(409).json({
+          message: "Email is already registered. Please use a different email.",
+        });
+      }
+      const randomBytes = crypto.randomBytes(Math.ceil((8 * 3) / 4));
+      const tempPassword = randomBytes.toString("base64").slice(0, 8);
+
+      const newUser = new Users({
+        email,
+        name: email.split("@")[0],
+        password: tempPassword,
+      });
+
+      newUser
+        .save()
+        .then((newUser) => {
+          const newClient = new Clients({
+            clientName,
+            clientId,
+            user: newUser._id,
+          });
+
+          newClient
+            .save()
+            .then((newClient) => {
+              const data = {
+                billId,
+                dueDate,
+                amount,
+                client: newClient._id,
+              };
+
+              const newBill = new Bills(data);
+
+              newBill
+                .save()
+                .then(async (createdBill) => {
+                  await sendEmailCloudRegister(email, tempPassword);
+                  return res.status(201).json({
+                    message: "User created. Check email.",
+                  });
+                })
+                .catch((error) => {
+                  console.log(error);
+                  return res.status(500).json({
+                    error,
+                    message: "Error creating bill",
+                  });
+                });
+            })
+            .catch((error) => {
+              console.log(error);
+              return res.status(500).json({
+                error,
+                message: "Error creating client",
+              });
+            });
         })
         .catch((error) => {
           console.log(error);

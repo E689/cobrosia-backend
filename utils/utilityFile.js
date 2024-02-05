@@ -375,6 +375,11 @@ const fileController = async (req, res) => {
           workbook.SheetNames.forEach(async (sheetName) => {
             const sheet = workbook.Sheets[sheetName];
             const data = xlsx.utils.sheet_to_json(sheet, { header: 1 });
+            let isFirstRow = true;
+            if (isFirstRow) {
+              isFirstRow = false;
+              return;
+            }
 
             data.forEach((row) => {
               const existingClient = newClients.find(
@@ -457,7 +462,10 @@ const fileController = async (req, res) => {
               if (
                 Object.values(row).some(
                   (field) =>
-                    field !== "" && field !== null && field !== undefined
+                    field !== "guid_documento" &&
+                    field !== "" &&
+                    field !== null &&
+                    field !== undefined
                 )
               ) {
                 const existingClient = newClients.find(

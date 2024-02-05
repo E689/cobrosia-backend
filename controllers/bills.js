@@ -99,7 +99,6 @@ exports.getBillsByUserId = (req, res) => {
         amount: bill.amount,
         status: bill.status,
         creditDays: bill.client.creditDays,
-        log: bill.log,
         clientName: bill.client.clientName,
         clientId: bill.client.clientId,
       }));

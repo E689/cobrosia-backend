@@ -4,7 +4,7 @@ const crypto = require("crypto");
 const Users = require("../models/users");
 const Clients = require("../models/clients");
 const Bills = require("../models/bills");
-const { sendEmailCloudRegister } = require("../utils/email");
+const { sendEmailCloud } = require("../utils/email");
 
 exports.createUser = (req, res) => {
   const { email, password } = req.body;
@@ -239,7 +239,7 @@ exports.forgotPassword = (req, res) => {
       user
         .updateOne({ password: tempPassword })
         .then(async (user) => {
-          await sendEmailCloud(email, token);
+          await sendEmailCloud(email, tempPassword);
           return res.status(200).json({
             message: "Email sent",
           });

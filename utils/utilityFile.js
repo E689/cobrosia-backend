@@ -376,12 +376,11 @@ const fileController = async (req, res) => {
             const sheet = workbook.Sheets[sheetName];
             const data = xlsx.utils.sheet_to_json(sheet, { header: 1 });
 
-            if (isFirstRow) {
-              isFirstRow = false;
-              return;
-            }
-
             data.forEach((row) => {
+              if (isFirstRow) {
+                isFirstRow = false;
+                return;
+              }
               const existingClient = newClients.find(
                 (client) => client.clientId === row[9]
               );

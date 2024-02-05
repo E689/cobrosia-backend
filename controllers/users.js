@@ -225,18 +225,21 @@ exports.forgotPassword = (req, res) => {
   const { email } = req.body;
   Users.findOne({ email })
     .then((user) => {
-      const token = jwt.sign(
-        { _id: user._id },
-        process.env.JWT_RESET_PASSWORD,
-        {
-          expiresIn: "5m",
-        }
-      );
+      const randomBytes = crypto.randomBytes(Math.ceil((8 * 3) / 4));
+      const tempPassword = randomBytes.toString("base64").slice(0, 8);
+
+      // const token = jwt.sign(
+      //   { _id: user._id },
+      //   process.env.JWT_RESET_PASSWORD,
+      //   {
+      //     expiresIn: "5m",
+      //   }
+      // );
 
       user
-        .updateOne({ resetPasswordLink: token })
-        .then((user) => {
-          sendEmailCloud(email, token);
+        .updateOne({ password: tempPassword })
+        .then(async (user) => {
+          await sendEmailCloud(email, token);
           return res.status(200).json({
             message: "Email sent",
           });

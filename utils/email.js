@@ -18,11 +18,11 @@ exports.sendEmailCloud = async (email, token) => {
   const response = await client.sendMessage({
     to: email,
     from: "cobrosai@uim.com.gt",
-    plain: `your reset link is: ${token}`,
-    html: `<h1>PONER EL PASSWORD NO EL LINK ${token}</h1>`,
-    subject: "Forgot password",
+    plain: `Gracias por usar Cobros AI. Te adjuntamos un nuevo password: ${token} ingresa y cambialo en la opcion cambiar contraseña. `,
+    html: `<h2>Gracias por usar Cobros AI. Te adjuntamos un nuevo password: <h1>${token}</h1> ingresa y cambialo en la opcion cambiar contraseña. </h2>`,
+    subject: "Aqui esta tu nuevo password temporal",
   });
-  console.log("email sent from cloudmail");
+  console.log("Email sent from cloudmail");
   return;
 };
 

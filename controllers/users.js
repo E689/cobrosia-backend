@@ -48,8 +48,8 @@ exports.createUser = (req, res) => {
 };
 
 exports.createUserWithBill = (req, res) => {
-  const { email, billId, amount, dueDate, clientId, clientName } = req.body;
-  if (!email || !billId || !amount || !dueDate || !clientId || !clientName) {
+  const { email, billId, amount, date, clientId, clientName } = req.body;
+  if (!email || !billId || !amount || !date || !clientId || !clientName) {
     return res.status(400).json({
       message: "Missing parameters.",
     });
@@ -85,7 +85,7 @@ exports.createUserWithBill = (req, res) => {
             .then((newClient) => {
               const data = {
                 billId,
-                dueDate,
+                date,
                 amount,
                 client: newClient._id,
               };

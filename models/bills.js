@@ -9,7 +9,7 @@ const billsSchema = new mongoose.Schema(
     amount: {
       type: String,
     },
-    dueDate: {
+    date: {
       type: String,
     },
     status: {

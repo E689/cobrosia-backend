@@ -145,7 +145,7 @@ const getLogByPhone = (phone, msg) => {
           };
           console.log("about to classify message");
           // const respuesta = await classifyMessage(
-          //   `soy ${foundClient.contactName}, le debo ${bill.amount} y era para el ${bill.dueDate} y le acabo de enviar este mensaje:${msg}`
+          //   `soy ${foundClient.contactName}, le debo ${bill.amount} y era para el ${bill.date} y le acabo de enviar este mensaje:${msg}`
           // );
 
           const { text, options } = await classificationCode(msg, bill);
@@ -404,7 +404,7 @@ const fileController = async (req, res) => {
                   new Bills({
                     billId: row[4],
                     amount: row[14],
-                    dueDate: row[0],
+                    date: row[0],
                     client: existingClient ? existingClientId : latestClientId,
                   })
                 );
@@ -487,7 +487,7 @@ const fileController = async (req, res) => {
                     new Bills({
                       billId: row.numero_de_documento,
                       amount: row.total_impuestos,
-                      dueDate: row.fecha_registro,
+                      date: row.fecha_registro,
                       client: existingClient
                         ? existingClientId
                         : latestClientId,

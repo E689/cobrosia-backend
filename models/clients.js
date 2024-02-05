@@ -26,6 +26,10 @@ const clientsSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    creditDays: {
+      type: Number,
+      default: 30,
+    },
     user: { type: ObjectId, ref: "Users" },
   },
   { timestamps: true }

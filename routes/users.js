@@ -123,7 +123,7 @@ router.post("/users/register/file", upload.single("file"), fileController);
  *               type: string
  *             amount:
  *               type: string
- *             dueDate:
+ *             date:
  *               type: string
  *             clientId:
  *               type: string

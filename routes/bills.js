@@ -29,7 +29,7 @@ const {
  *           properties:
  *             amount:
  *               type: number
- *             dueDate:
+ *             date:
  *               type: string
  *               format: date
  *             status:
@@ -48,10 +48,10 @@ const {
  *             message: Messages for bills sent
  *             bills: []
  *       400:
- *         description: Missing parameters. Please enter amount, dueDate, status, clientId.
+ *         description: Missing parameters. Please enter amount, date, status, clientId.
  *         examples:
  *           application/json:
- *             message: Missing parameters. Please enter amount, dueDate, status, clientId.
+ *             message: Missing parameters. Please enter amount, date, status, clientId.
  *       500:
  *         description: Error creating bill or messaging for bills.
  *         examples:
@@ -147,7 +147,7 @@ router.get("/bills/log/:id", getLogByBillId);
  *           properties:
  *             amount:
  *               type: number
- *             dueDate:
+ *             date:
  *               type: string
  *               format: date
  *             status:

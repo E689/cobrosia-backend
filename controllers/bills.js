@@ -2,17 +2,17 @@ const Bills = require("../models/bills");
 const Clients = require("../models/clients");
 
 exports.createBill = (req, res) => {
-  const { amount, dueDate, status, clientId, billId, context } = req.body;
-  if (!amount || !dueDate || !status || !clientId || !billId) {
+  const { amount, date, status, clientId, billId, context } = req.body;
+  if (!amount || !date || !status || !clientId || !billId) {
     return res.status(400).json({
       message:
-        "Missing parameters. Please enter amount, dueDate, status, clientId",
+        "Missing parameters. Please enter amount, date, status, clientId",
     });
   }
 
   const data = {
     amount,
-    dueDate,
+    date,
     status,
     client: clientId,
     billId,
@@ -156,11 +156,11 @@ exports.deleteBill = (req, res) => {
 
 exports.updateBill = (req, res) => {
   const id = req.params.id;
-  const { amount, dueDate, status, clientId, billId, context } = req.body;
+  const { amount, date, status, clientId, billId, context } = req.body;
 
   const updateData = {
     amount,
-    dueDate,
+    date,
     status,
     billId,
     client: clientId,

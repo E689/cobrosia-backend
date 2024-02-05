@@ -4,7 +4,7 @@ const crypto = require("crypto");
 const Users = require("../models/users");
 const Clients = require("../models/clients");
 const Bills = require("../models/bills");
-const { sendEmailCloud } = require("../utils/email");
+const { sendEmailCloudRegister } = require("../utils/email");
 
 exports.createUser = (req, res) => {
   const { email, password } = req.body;

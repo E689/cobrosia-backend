@@ -1,6 +1,6 @@
 const Clients = require("../models/clients");
 const Bills = require("../models/bills");
-const { sendEmailCloudRegister } = require("../utils/email");
+const { sendEmailCloudRegister, sendEmailCloud } = require("../utils/email");
 
 exports.createClient = (req, res) => {
   const { clientName, userId, contactName, contactLastName, phone, email } =

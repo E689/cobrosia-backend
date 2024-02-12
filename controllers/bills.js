@@ -161,6 +161,7 @@ exports.deleteBill = (req, res) => {
     });
 };
 
+//modify accept
 exports.updateBill = (req, res) => {
   const id = req.params.id;
   const { amount, date, status, clientId, billId, context } = req.body;
@@ -242,3 +243,5 @@ exports.revisarBills = (req, res) => {
       });
     });
 };
+
+exports.importBillsFromFile = () => {};

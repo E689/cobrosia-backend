@@ -96,6 +96,7 @@ exports.getClients = (req, res) => {
     });
 };
 
+//modify swagger
 exports.updateClient = (req, res) => {
   const clientId = req.params.id;
   const updatedFields = req.body;

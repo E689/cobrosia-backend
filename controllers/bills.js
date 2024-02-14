@@ -104,7 +104,7 @@ exports.createBillsFromFile = (req, res) => {
       if (!user) {
         return res.status(404).json({ message: "User not found" });
       }
-      const newUsersId = newUser._id;
+      const newUsersId = user._id;
       const newClients = [];
       const newBills = [];
 

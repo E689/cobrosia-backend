@@ -1,5 +1,7 @@
 const Bills = require("../models/bills");
 const Clients = require("../models/clients");
+const Users = require("../models/users");
+const xlsx = require("xlsx");
 
 exports.createBill = (req, res) => {
   const { amount, date, status, clientId, billId, context } = req.body;
@@ -81,6 +83,125 @@ exports.createBill = (req, res) => {
         message: "Error creating bill",
       });
     });
+};
+
+exports.createBillsFromFile = (req, res) => {
+  try {
+    const userId = req.body.userId;
+    if (!userId) {
+      return res.status(400).send("User Id is required.");
+    }
+    if (!req.file) {
+      return res.status(400).send("No file provided.");
+    }
+    if (!req.file.mimetype.includes("excel")) {
+      res
+        .status(400)
+        .send("Unsupported file format. Please upload an Excel file.");
+    }
+
+    Users.findOne({ _id: userId }).then((user) => {
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      const newUsersId = newUser._id;
+      const newClients = [];
+      const newBills = [];
+
+      Clients.find({ user: userId })
+        .then((clients) => {
+          newClients.push(...clients);
+
+          clients.forEach((client) => {
+            Bills.find({ client: client._id })
+              .then((bills) => {
+                newBills.push(...bills);
+                return;
+              })
+              .catch((error) => {
+                console.error("Error fetching bills:", error);
+                return res
+                  .status(500)
+                  .json({ error, message: "Error fetching bills" });
+              });
+          });
+        })
+        .catch((error) => {
+          console.error("Error fetching clients:", error);
+          return res
+            .status(500)
+            .json({ error, message: "Error fetching clients" });
+        });
+
+      const workbook = xlsx.read(req.file.buffer, { type: "buffer" });
+      let isFirstRow = true;
+      workbook.SheetNames.forEach(async (sheetName) => {
+        const sheet = workbook.Sheets[sheetName];
+        const data = xlsx.utils.sheet_to_json(sheet, { header: 1 });
+
+        data.forEach((row) => {
+          if (isFirstRow) {
+            isFirstRow = false;
+            return;
+          }
+          const existingClient = newClients.find(
+            (client) => client.clientId === row[9]
+          );
+          let existingClientId, latestClientId;
+
+          if (existingClient) {
+            existingClientId = existingClient._id;
+          } else {
+            newClients.push(
+              new Clients({
+                clientName: row[10],
+                clientId: row[9],
+                user: newUsersId,
+              })
+            );
+            latestClientId = newClients[newClients.length - 1]._id;
+          }
+
+          const existingBill = newBills.find((bill) => bill.billId === row[4]);
+
+          if (!existingBill) {
+            newBills.push(
+              new Bills({
+                billId: row[4],
+                amount: row[14],
+                date: row[0],
+                client: existingClient ? existingClientId : latestClientId,
+              })
+            );
+          }
+        });
+
+        Clients.insertMany(newClients)
+          .then((savedClients) => {
+            console.log("Clients saved successfully:");
+            Bills.insertMany(newBills)
+              .then((savedBills) => {
+                console.log("Bills saved successfully:");
+                return;
+              })
+              .catch((err) => console.error("Error saving bills:", err));
+            return;
+          })
+          .catch((err) => console.error("Error saving clients:", err));
+
+        return;
+      });
+      res.status(200).send(`File uploaded and processed successfully.${email}`);
+      console.log(
+        `File uploaded and processed successfully ${lineCount} rows. email ${email}`
+      );
+      return;
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send(error);
+    return;
+  }
 };
 
 exports.getBill = (req, res) => {};

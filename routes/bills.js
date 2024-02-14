@@ -1,5 +1,8 @@
 const express = require("express");
 const router = express.Router();
+const multer = require("multer");
+const storage = multer.memoryStorage();
+const upload = multer({ storage: storage });
 
 const {
   createBill,
@@ -7,6 +10,7 @@ const {
   deleteBill,
   updateBill,
   getLogByBillId,
+  createBillsFromFile,
 } = require("../controllers/bills");
 
 /**
@@ -60,6 +64,58 @@ const {
  *             message: Error creating bill or messaging for bills.
  */
 router.post("/bills", createBill);
+
+/**
+ * @swagger
+ * /bills/file:
+ *   post:
+ *     summary: Import bills from file
+ *     description: once logged in, user can import bills from file.
+ *     tags:
+ *       - Bills
+ *     consumes:
+ *       - application/json
+ *     parameters:
+ *       - in: body
+ *         name: createBillRequest
+ *         description: Request object for creating a new bill.
+ *         required: true
+ *         schema:
+ *           type: object
+ *           properties:
+ *             amount:
+ *               type: number
+ *             date:
+ *               type: string
+ *               format: date
+ *             status:
+ *               type: string
+ *             clientId:
+ *               type: string
+ *             billId:
+ *               type: string
+ *             context:
+ *               type: string
+ *     responses:
+ *       200:
+ *         description: Messages for bills sent
+ *         examples:
+ *           application/json:
+ *             message: Messages for bills sent
+ *             bills: []
+ *       400:
+ *         description: Missing parameters. Please enter amount, date, status, clientId.
+ *         examples:
+ *           application/json:
+ *             message: Missing parameters. Please enter amount, date, status, clientId.
+ *       500:
+ *         description: Error creating bill or messaging for bills.
+ *         examples:
+ *           application/json:
+ *             error: Error creating bill or messaging for bills.
+ *             message: Error creating bill or messaging for bills.
+ */
+router.post("/bills/file", upload.single("file"), createBillsFromFile);
 
 /**
  * @swagger

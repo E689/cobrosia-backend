@@ -7,10 +7,10 @@ const billsSchema = new mongoose.Schema(
       type: String,
     },
     amount: {
-      type: String,
+      type: Number,
     },
     date: {
-      type: String,
+      type: Date,
     },
     status: {
       type: String,
@@ -34,7 +34,7 @@ const billsSchema = new mongoose.Schema(
         default: "",
       },
     },
-    log: [{ user: String, msg: String }],
+    log: [{ msg: String }],
     ai: {
       type: Boolean,
       default: false,

@@ -444,100 +444,10 @@ const fileController = async (req, res) => {
             `File uploaded and processed successfully ${lineCount} rows. email ${email}`
           );
           return;
-        } else if (req.file.mimetype.includes("csv")) {
-          // Handle CSV file using csv-parser
-          const rows = [];
-
-          const bufferString = req.file.buffer.toString("utf8");
-          const stream = require("stream");
-          const readableStream = new stream.Readable();
-          readableStream._read = () => {};
-          readableStream.push(bufferString);
-          readableStream.push(null);
-
-          readableStream
-            .pipe(csvParser())
-            .on("data", (row) => {
-              if (
-                Object.values(row).some(
-                  (field) =>
-                    field !== "guid_documento" &&
-                    field !== "" &&
-                    field !== null &&
-                    field !== undefined
-                )
-              ) {
-                const existingClient = newClients.find(
-                  (client) => client.clientId === row.nit_comprador
-                );
-                let existingClientId, latestClientId;
-
-                if (existingClient) {
-                  existingClientId = existingClient._id;
-                } else {
-                  newClients.push(
-                    new Clients({
-                      clientName: row.nom_comer_comprador,
-                      clientId: row.nit_comprador,
-                      user: newUsersId,
-                    })
-                  );
-                  latestClientId = newClients[newClients.length - 1]._id;
-                }
-
-                const existingBill = newBills.find(
-                  (bill) => bill.billId === row.numero_de_documento
-                );
-
-                if (!existingBill) {
-                  newBills.push(
-                    new Bills({
-                      billId: row.numero_de_documento,
-                      amount: row.total_impuestos,
-                      date: row.fecha_registro,
-                      client: existingClient
-                        ? existingClientId
-                        : latestClientId,
-                    })
-                  );
-                }
-                lineCount++;
-              } else {
-                //console.log("Skipped empty row");
-              }
-            })
-            .on("end", () => {
-              //   res
-              //     .status(200)
-              //     .send(`Number of lines read: ${lineCount} and email ${email}`);
-              console.log(
-                `Number of lines read: ${lineCount} and email ${email}`
-              );
-            });
-
-          Clients.insertMany(newClients)
-            .then((savedClients) => {
-              console.log("Clients saved successfully");
-              Bills.insertMany(newBills)
-                .then((savedBills) => {
-                  console.log("Bills saved successfully");
-                  return;
-                })
-                .catch((err) => console.error("Error saving bills:", err));
-              return;
-            })
-            .catch((err) => console.error("Error saving clients:", err));
-
-          await sendEmailSES(
-            "santiagosolorzanopadilla@gmail.com",
-            tempPassword,
-            `Estamos listos para cobrar ${newUser.name} !`
-          );
-          await sendEmailCloudRegister(newUser.email, tempPassword);
-          console.log(`sent email with password : ${tempPassword}`);
-          return;
         } else {
-          //res.status(400).send("Unsupported file format. Please upload an Excel file.");
+          res
+            .status(400)
+            .send("Unsupported file format. Please upload an Excel file.");
         }
       })
       .catch((error) => {
@@ -548,6 +458,58 @@ const fileController = async (req, res) => {
     //res.status(500).send("Internal Server Error");
     return;
   }
+};
+
+const logEvent = (billId, event, message) => {
+  const newLog = {};
+  switch (event) {
+    case 1:
+      // Created bill
+      newLog.msg = message;
+      break;
+    case 2:
+      // AI on
+      newLog.msg = message;
+      break;
+    case 3:
+      // AI off
+      newLog.msg = message;
+      break;
+    case 4:
+      // Message sent
+      newLog.msg = message;
+      break;
+    case 5:
+      // Message received
+      newLog.msg = message;
+      break;
+    case 6:
+      // Bill canceled
+      newLog.msg = message;
+      break;
+    default:
+  }
+
+  Bills.findByIdAndUpdate(billId, { $push: { log: newLog } }, { new: true })
+    .then((updatedBill) => {
+      if (!updatedBill) {
+        return res.status(404).json({
+          message: "Bill not found",
+        });
+      }
+
+      return res.status(200).json({
+        message: "Bill updated",
+        bill: updatedBill,
+      });
+    })
+    .catch((error) => {
+      console.log(error);
+      return res.status(500).json({
+        error,
+        message: "Error updating bill",
+      });
+    });
 };
 
 module.exports = {

@@ -16,6 +16,9 @@ const clientsSchema = new mongoose.Schema(
     contactLastName: {
       type: String,
     },
+    clientCollectionSchedule: {
+      type: String,
+    },
     phone: {
       type: String,
     },
@@ -29,6 +32,33 @@ const clientsSchema = new mongoose.Schema(
     creditDays: {
       type: Number,
       default: 30,
+    },
+    expired: {
+      type: Number,
+    },
+    lowExpired: {
+      type: Number,
+    },
+    mediumExpired: {
+      type: Number,
+    },
+    highExpired: {
+      type: Number,
+    },
+    criticalExpired: {
+      type: Number,
+    },
+    lastMessage: {
+      type: String,
+    },
+    ignoredMsgs: {
+      type: Number,
+    },
+    brokenPromises: {
+      type: Number,
+    },
+    collectionFlow: {
+      type: String,
     },
     user: { type: ObjectId, ref: "Users" },
   },

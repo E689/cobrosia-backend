@@ -135,6 +135,9 @@ exports.createBillsFromFile = (req, res) => {
 
       const workbook = xlsx.read(req.file.buffer, { type: "buffer" });
       let isFirstRow = true;
+      const newClientsSave = [];
+      const newBillsSave = [];
+
       workbook.SheetNames.forEach(async (sheetName) => {
         const sheet = workbook.Sheets[sheetName];
         const data = xlsx.utils.sheet_to_json(sheet, { header: 1 });
@@ -152,34 +155,35 @@ exports.createBillsFromFile = (req, res) => {
           if (existingClient) {
             existingClientId = existingClient._id;
           } else {
-            newClients.push(
-              new Clients({
-                clientName: row[10],
-                clientId: row[9],
-                user: newUsersId,
-              })
-            );
+            const createdClient = new Clients({
+              clientName: row[10],
+              clientId: row[9],
+              user: newUsersId,
+            });
+
+            newClients.push(createdClient);
+            newClientsSave.push(createdClient);
             latestClientId = newClients[newClients.length - 1]._id;
           }
 
           const existingBill = newBills.find((bill) => bill.billId === row[4]);
 
           if (!existingBill) {
-            newBills.push(
-              new Bills({
-                billId: row[4],
-                amount: row[14],
-                date: row[0],
-                client: existingClient ? existingClientId : latestClientId,
-              })
-            );
+            const createdBill = new Bills({
+              billId: row[4],
+              amount: row[14],
+              date: row[0],
+              client: existingClient ? existingClientId : latestClientId,
+            });
+            newBills.push(createdBill);
+            newBillsSave.push(createdBill);
           }
         });
 
-        Clients.insertMany(newClients)
+        Clients.insertMany(newClientsSave)
           .then((savedClients) => {
             console.log("Clients saved successfully:");
-            Bills.insertMany(newBills)
+            Bills.insertMany(newBillsSave)
               .then((savedBills) => {
                 console.log("Bills saved successfully:");
                 return;

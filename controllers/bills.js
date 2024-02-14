@@ -196,9 +196,7 @@ exports.createBillsFromFile = (req, res) => {
         return;
       });
       res.status(200).send(`File uploaded and processed successfully.`);
-      console.log(
-        `File uploaded and processed successfully ${lineCount} rows. email ${email}`
-      );
+      console.log(`File uploaded and processed successfully`);
       return;
     });
   } catch (error) {

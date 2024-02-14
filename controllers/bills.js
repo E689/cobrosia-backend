@@ -100,7 +100,7 @@ exports.createBillsFromFile = (req, res) => {
         .send("Unsupported file format. Please upload an Excel file.");
     }
 
-    Users.findOne({ _id: userId }).then((user) => {
+    Users.findOne({ _id: userId }).then(async (user) => {
       if (!user) {
         return res.status(404).json({ message: "User not found" });
       }
@@ -108,31 +108,17 @@ exports.createBillsFromFile = (req, res) => {
       const newClients = [];
       const newBills = [];
 
-      Clients.find({ user: userId })
-        .then((clients) => {
-          newClients.push(...clients);
+      const clients = await Clients.find({ user: userId });
+      newClients.push(...clients);
+      for (const client of clients) {
+        const bills = await Bills.find({ client: client._id });
+        newBills.push(...bills);
+        console.log(`client ${client._id} has ${bills.length} bills`);
+      }
 
-          clients.forEach((client) => {
-            Bills.find({ client: client._id })
-              .then((bills) => {
-                newBills.push(...bills);
-                return;
-              })
-              .catch((error) => {
-                console.error("Error fetching bills:", error);
-                return res
-                  .status(500)
-                  .json({ error, message: "Error fetching bills" });
-              });
-          });
-        })
-        .catch((error) => {
-          console.error("Error fetching clients:", error);
-          return res
-            .status(500)
-            .json({ error, message: "Error fetching clients" });
-        });
-
+      console.log(
+        `old clients ${newClients.length} old bills ${newBills.length}`
+      );
       const workbook = xlsx.read(req.file.buffer, { type: "buffer" });
       let isFirstRow = true;
       const newClientsSave = [];
@@ -195,6 +181,13 @@ exports.createBillsFromFile = (req, res) => {
 
         return;
       });
+
+      console.log(
+        `all clients ${newClients.length} new clients ${newClientsSave.length}`
+      );
+      console.log(
+        `all bills ${newBills.length} new clients ${newBillsSave.length}`
+      );
       res.status(200).send(`File uploaded and processed successfully.`);
       console.log(`File uploaded and processed successfully`);
       return;

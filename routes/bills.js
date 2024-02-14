@@ -74,34 +74,24 @@ router.post("/bills", createBill);
  *     tags:
  *       - Bills
  *     consumes:
- *       - application/json
+ *       - multipart/form-data
  *     parameters:
- *       - in: body
- *         name: createBillRequest
- *         description: Request object for creating a new bill.
+ *       - in: formData
+ *         name: userId
+ *         type: string
  *         required: true
- *         schema:
- *           type: object
- *           properties:
- *             amount:
- *               type: number
- *             date:
- *               type: string
- *               format: date
- *             status:
- *               type: string
- *             clientId:
- *               type: string
- *             billId:
- *               type: string
- *             context:
- *               type: string
+ *         description: id of the user.
+ *       - in: formData
+ *         name: file
+ *         type: file
+ *         required: true
+ *         description: Excel or CSV file to process.
  *     responses:
  *       200:
- *         description: Messages for bills sent
+ *         description: bills sent
  *         examples:
  *           application/json:
- *             message: Messages for bills sent
+ *             message: bills sent
  *             bills: []
  *       400:
  *         description: Missing parameters. Please enter amount, date, status, clientId.

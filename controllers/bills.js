@@ -123,6 +123,7 @@ exports.createBillsFromFile = (req, res) => {
       let isFirstRow = true;
       const newClientsSave = [];
       const newBillsSave = [];
+      const updateBills = [];
 
       workbook.SheetNames.forEach(async (sheetName) => {
         const sheet = workbook.Sheets[sheetName];
@@ -133,6 +134,11 @@ exports.createBillsFromFile = (req, res) => {
             isFirstRow = false;
             return;
           }
+
+          if (!(row[2] === "FCAM" || row[2] === "FACT")) {
+            return;
+          }
+
           const existingClient = newClients.find(
             (client) => client.clientId === row[9]
           );
@@ -154,12 +160,24 @@ exports.createBillsFromFile = (req, res) => {
 
           const existingBill = newBills.find((bill) => bill.billId === row[4]);
 
+          if (
+            existingBill &&
+            !(row[15] === "Vigente") &&
+            existingBill.billStatus === "Vigente"
+          ) {
+            existingBill.billStatus = row[15];
+            //escribir en el log que la factura cambio de estado
+            updateBills.push(existingBill);
+          }
+
           if (!existingBill) {
             const createdBill = new Bills({
               billId: row[4],
               amount: row[14],
               date: row[0],
+              billStatus: row[15],
               client: existingClient ? existingClientId : latestClientId,
+              // agregar al log que se creo la factura
             });
             newBills.push(createdBill);
             newBillsSave.push(createdBill);
@@ -178,6 +196,8 @@ exports.createBillsFromFile = (req, res) => {
             return;
           })
           .catch((err) => console.error("Error saving clients:", err));
+
+        // update many bills updateBills
 
         return;
       });

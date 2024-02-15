@@ -16,6 +16,9 @@ const billsSchema = new mongoose.Schema(
       type: String,
       default: "AIOff",
     },
+    billStatus: {
+      type: String,
+    },
     context: {
       reminder: {
         type: String,

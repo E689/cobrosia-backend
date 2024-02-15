@@ -19,6 +19,7 @@ const allRoutes = require("./routes/all");
 const billRoutes = require("./routes/bills");
 const clientRoutes = require("./routes/clients");
 const userRoutes = require("./routes/users");
+const emailRoutes = require("./routes/email");
 
 //app  middlewares
 app.use(bodyParser.json());
@@ -31,6 +32,7 @@ app.use("/api", allRoutes);
 app.use("/api", billRoutes);
 app.use("/api", clientRoutes);
 app.use("/api", userRoutes);
+app.use("/api", emailRoutes);
 
 const port = process.env.PORT || 8000;
 

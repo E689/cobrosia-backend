@@ -62,6 +62,23 @@ exports.getClientsByUser = async (req, res) => {
   }
 };
 
+exports.getClientById = async (req, res) => {
+  try {
+    const id = req.params.id;
+    const client = await Clients.findOne({ _id: id });
+
+    return res.status(200).json({
+      client,
+      message: "Client retrieved",
+    });
+  } catch (error) {
+    return res.status(500).json({
+      error,
+      message: "Error finding Client",
+    });
+  }
+};
+
 exports.getClient = (req, res) => {
   const id = req.params.id;
   Clients.find({ _id: id })

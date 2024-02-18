@@ -6,6 +6,7 @@ const {
   updateClient,
   deleteClient,
   getClientsByUser,
+  getClientById,
 } = require("../controllers/clients");
 
 /**
@@ -181,5 +182,30 @@ router.put("/clients/:id", updateClient);
  *         description: Internal error
  */
 router.delete("/clients/:id", deleteClient);
-
+/**
+ * @swagger
+ * /client/{id}:
+ *   get:
+ *     summary: Get client from id
+ *     description:  Get clients from id
+ *     tags:
+ *       - Clients
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: The ID of the client.
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Successful response
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/models/Clients'
+ *       500:
+ *         description: Internal error
+ */
+router.get("/client/:id", getClientById);
 module.exports = router;

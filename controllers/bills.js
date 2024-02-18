@@ -11,17 +11,9 @@ const {
 } = require("../utils/services");
 
 exports.createBill = async (req, res) => {
-  const {
-    amount,
-    date,
-    status,
-    clientId,
-    billId,
-    context,
-    clientName,
-    userId,
-  } = req.body;
-  if (!amount || !date || !status || !clientId || !billId) {
+  const { amount, date, clientId, billId, context, clientName, userId } =
+    req.body;
+  if (!amount || !date || !clientId || !billId) {
     return res.status(400).json({
       message:
         "Missing parameters. Please enter amount, date, status, clientId",
@@ -48,7 +40,6 @@ exports.createBill = async (req, res) => {
   const data = {
     amount,
     date,
-    status,
     client: client._id,
     billId,
     log: [

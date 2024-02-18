@@ -21,6 +21,7 @@ const billsSchema = new mongoose.Schema(
     },
     creditDays: {
       type: Number,
+      default: 0,
     },
     context: {
       reminder: {

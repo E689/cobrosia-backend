@@ -109,25 +109,50 @@ router.get("/clients/:id", getClientsByUser);
  *         schema:
  *           type: string
  *       - in: body
- *         name: data
- *         description: User credentials for login.
+ *         name: updateClientRequest
+ *         description: Request object for updating a client.
  *         required: true
  *         schema:
  *           type: object
  *           properties:
  *             clientName:
  *               type: string
+ *             clientId:
+ *               type: string
+ *             contactName:
+ *               type: string
+ *             contactLastName:
+ *               type: string
+ *             clientCollectionSchedule:
+ *               type: string
+ *             phone:
+ *               type: string
+ *             email:
+ *               type: string
  *             ai:
  *               type: boolean
+ *             creditDays:
+ *               type: number
+ *             collectionFlow:
+ *               type: number
  *     responses:
  *       200:
- *         description: Successful response
- *         content:
+ *         description: bill saved
+ *         examples:
  *           application/json:
- *             schema:
- *               $ref: '#/models/Clients'
+ *             message: Messages for bills sent
+ *             bills: []
+ *       400:
+ *         description: Missing required parameters. Please enter amount, date, status, clientId.
+ *         examples:
+ *           application/json:
+ *             message: Missing parameters. Please enter amount, date, status, clientId.
  *       500:
- *         description: Internal error
+ *         description: Error creating bill or messaging for bills.
+ *         examples:
+ *           application/json:
+ *             error: Error creating bill or messaging for bills.
+ *             message: Error creating bill or messaging for bills.
  */
 router.put("/clients/:id", updateClient);
 /**

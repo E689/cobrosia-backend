@@ -115,7 +115,7 @@ exports.updateClient = (req, res) => {
   );
 
   const updateBillsPromise = ai
-    ? Bills.updateMany({ client: clientId }, { ai: true })
+    ? Bills.updateMany({ client: clientId }, { status: "Process", ai: true })
     : Promise.resolve(null);
 
   Promise.all([updateClientPromise, updateBillsPromise])

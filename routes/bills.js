@@ -11,6 +11,7 @@ const {
   updateBill,
   getLogByBillId,
   createBillsFromFile,
+  getBillsByClientId,
 } = require("../controllers/bills");
 
 /**
@@ -141,6 +142,37 @@ router.post("/bills/file", upload.single("file"), createBillsFromFile);
  *             message: Error finding bills
  */
 router.get("/bills/:id", getBillsByUserId);
+
+/**
+ * @swagger
+ * /bills/client/{id}:
+ *   get:
+ *     summary: Get bills by client ID
+ *     description: Retrieve bills associated with a specific client ID.
+ *     tags:
+ *       - Bills
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: The ID of the client.
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Bills from client retrieved
+ *         examples:
+ *           application/json:
+ *             bills: []
+ *             message: Bills from client retrieved
+ *       500:
+ *         description: Error finding bills
+ *         examples:
+ *           application/json:
+ *             error: Error finding bills
+ *             message: Error finding bills
+ */
+router.get("/bills/client/:id", getBillsByClientId);
 
 /**
  * @swagger

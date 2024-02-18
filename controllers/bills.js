@@ -4,6 +4,11 @@ const Users = require("../models/users");
 const xlsx = require("xlsx");
 
 const { LOG_ENTRY_TYPE } = require("../constants");
+const {
+  updateBillsCreditDays,
+  countOverDueBillsfromClient,
+  countAiOn,
+} = require("../utils/services");
 
 exports.createBill = async (req, res) => {
   const {
@@ -25,7 +30,7 @@ exports.createBill = async (req, res) => {
   let client;
 
   try {
-    client = await Clients.findOne({ cliendId: clientId });
+    client = await Clients.findOne({ clientId: clientId });
     if (!client) {
       const clientData = { clientId, user: userId };
       if (clientName) {
@@ -244,21 +249,32 @@ exports.getBillsByUserId = (req, res) => {
     });
 };
 
-exports.getBillsByClientId = (req, res) => {
-  const id = req.params.id;
-  Bills.find({ client: id })
-    .then((bill) => {
-      return res.status(200).json({
-        bill,
-        message: "bill from client retrieved",
-      });
-    })
-    .catch((error) => {
-      return res.status(500).json({
-        error,
-        message: "Error finding bill",
-      });
+exports.getBillsByClientId = async (req, res) => {
+  try {
+    const id = req.params.id;
+
+    if (await !updateBillsCreditDays(id)) {
+      return res.status(404).json({ message: "Client not found" });
+    }
+
+    const { totalPastDueDateBills, overdueCount, bills } =
+      await countOverDueBillsfromClient(id);
+
+    const aiOn = await countAiOn(id);
+
+    return res.status(200).json({
+      bills,
+      aiOn,
+      message: "bills from client retrieved",
+      totalPastDueDateBills,
+      overdueCount,
     });
+  } catch (e) {
+    return res.status(500).json({
+      error,
+      message: "Error finding bills",
+    });
+  }
 };
 
 exports.deleteBill = (req, res) => {
@@ -289,7 +305,6 @@ exports.deleteBill = (req, res) => {
     });
 };
 
-//modify accept
 exports.updateBill = (req, res) => {
   const id = req.params.id;
   const { amount, date, status, clientId, billId, context } = req.body;

@@ -19,6 +19,9 @@ const billsSchema = new mongoose.Schema(
     billStatus: {
       type: String,
     },
+    creditDays: {
+      type: Number,
+    },
     context: {
       reminder: {
         type: String,
@@ -37,7 +40,7 @@ const billsSchema = new mongoose.Schema(
         default: "",
       },
     },
-    log: [{ msg: String }],
+    log: [{ date: Date, case: Number, message: String }],
     ai: {
       type: Boolean,
       default: false,

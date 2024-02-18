@@ -3,12 +3,32 @@ const Clients = require("../models/clients");
 const Users = require("../models/users");
 const xlsx = require("xlsx");
 
-exports.createBill = (req, res) => {
-  const { amount, date, status, clientId, billId, context } = req.body;
+const { LOG_ENTRY_TYPE } = require("../constants");
+
+exports.createBill = async (req, res) => {
+  const { amount, date, status, clientId, billId, context, clientName } =
+    req.body;
   if (!amount || !date || !status || !clientId || !billId) {
     return res.status(400).json({
       message:
         "Missing parameters. Please enter amount, date, status, clientId",
+    });
+  }
+  let client;
+
+  try {
+    client = await Clients.findOne({ cliendId: clientId });
+    if (!client) {
+      const clientData = { clientId };
+      if (clientName) {
+        clientData.clientName = clientName;
+      }
+      client = new Clients(clientData);
+      await client.save();
+    }
+  } catch (error) {
+    return res.status(400).json({
+      message: "error with client",
     });
   }
 
@@ -16,9 +36,15 @@ exports.createBill = (req, res) => {
     amount,
     date,
     status,
-    client: clientId,
+    client: client._id,
     billId,
-    log: [],
+    log: [
+      {
+        date: new Date(),
+        case: LOG_ENTRY_TYPE.BILL_CREATED,
+        message: "Bill created",
+      },
+    ],
   };
 
   if (context) {
@@ -30,51 +56,9 @@ exports.createBill = (req, res) => {
   newBill
     .save()
     .then((newBill) => {
-      const user = "GPT";
-      Bills.find({ status: { $in: ["0", "1"] } })
-        .populate("client")
-        .then((bills) => {
-          bills.forEach(async (bill) => {
-            const logEntry = {
-              user: user,
-              msg: `Estimado ${bill.client.clientName} tiene una factura numero ${bill.billId} por un monto de Q ${bill.amount} pendiente de pago.`,
-            };
-            fetch(process.env.ULTRAMSG_URL, {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({
-                token: process.env.ULTRAMSG_TOKEN,
-                to: `+502${bill.client.phone}`,
-                body: `${logEntry.msg}`,
-              }),
-            })
-              .then((response) => response.json())
-              .then((data) => {
-                console.log(data);
-              })
-              .catch((error) => {
-                console.error("Fetch error:", error);
-              });
-            await Bills.updateOne(
-              { _id: bill._id },
-              { $push: { log: logEntry } }
-            );
-          });
-
-          return res.status(200).json({
-            message: "messages for bills sent",
-            bills: bills,
-          });
-        })
-        .catch((error) => {
-          console.log(error);
-          return res.status(500).json({
-            error,
-            message: "Error messaging for bills bills",
-          });
-        });
+      return res.status(200).json({
+        message: "bill saved",
+      });
     })
     .catch((error) => {
       console.log(error);

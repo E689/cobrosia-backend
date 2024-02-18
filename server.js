@@ -15,11 +15,12 @@ mongoose
 const app = express();
 
 //import routes
-const allRoutes = require("./routes/all");
+
 const billRoutes = require("./routes/bills");
 const clientRoutes = require("./routes/clients");
 const userRoutes = require("./routes/users");
-const emailRoutes = require("./routes/email");
+const emailRoutes = require("./routes/emails");
+//const flowRoutes = require("./routes/flows");
 
 //app  middlewares
 app.use(bodyParser.json());
@@ -28,11 +29,12 @@ app.use(cors());
 
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(specs));
 //app  middlewares
-app.use("/api", allRoutes);
+
 app.use("/api", billRoutes);
 app.use("/api", clientRoutes);
 app.use("/api", userRoutes);
 app.use("/api", emailRoutes);
+//app.use("/api", flowRoutes);
 
 const port = process.env.PORT || 8000;
 

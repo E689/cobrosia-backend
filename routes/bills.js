@@ -40,19 +40,21 @@ const {
  *               type: string
  *             clientId:
  *               type: string
+ *             clientName:
+ *               type: string
  *             billId:
  *               type: string
  *             context:
  *               type: string
  *     responses:
  *       200:
- *         description: Messages for bills sent
+ *         description: bill saved
  *         examples:
  *           application/json:
  *             message: Messages for bills sent
  *             bills: []
  *       400:
- *         description: Missing parameters. Please enter amount, date, status, clientId.
+ *         description: Missing required parameters. Please enter amount, date, status, clientId.
  *         examples:
  *           application/json:
  *             message: Missing parameters. Please enter amount, date, status, clientId.

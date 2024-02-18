@@ -163,7 +163,11 @@ exports.createBillsFromFile = (req, res) => {
             existingBill.billStatus === "Vigente"
           ) {
             existingBill.billStatus = row[15];
-            //escribir en el log que la factura cambio de estado
+            existingBill.log.push({
+              date: new Date(),
+              case: LOG_ENTRY_TYPE.BILL_ANULLED,
+              message: "Bill ANULLED",
+            });
             updateBills.push(existingBill);
           }
 

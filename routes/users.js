@@ -12,9 +12,11 @@ const {
   forgotPassword,
   changePassword,
   createUserWithBill,
+  createUserFromFile,
+  deleteUser,
 } = require("../controllers/users");
 
-const { fileController } = require("../utils/utilityFile");
+const {} = require("../utils/utilityFile");
 
 /**
  * @swagger
@@ -97,7 +99,7 @@ router.post("/users/register", createUser);
  *           application/json:
  *             error: Internal Server Error
  */
-router.post("/users/register/file", upload.single("file"), fileController);
+router.post("/users/register/file", upload.single("file"), createUserFromFile);
 
 /**
  * @swagger
@@ -274,5 +276,41 @@ router.put("/users/change-password", changePassword);
 router.post("/users/forgot-password", forgotPassword);
 
 router.post("/users/reset-password", resetPassword);
+
+/**
+ * @swagger
+ * /users/delete:
+ *   delete:
+ *     summary: Delete user from email
+ *     description: delete user from email.
+ *     tags:
+ *       - Users
+ *     consumes:
+ *       - application/json
+ *     parameters:
+ *       - in: body
+ *         name: userData
+ *         description: User data.
+ *         required: true
+ *         schema:
+ *           type: object
+ *           properties:
+ *             email:
+ *               type: string
+ *     produces:
+ *        - application/json
+ *        - text/csv
+ *     responses:
+ *       200:
+ *         description: Successful delete
+ *         examples:
+ *           application/json:
+ *             message: User Deleted
+ *       400:
+ *         description: Missing parameters
+ *       500:
+ *         description: Internal error
+ */
+router.delete("/users/delete", deleteUser);
 
 module.exports = router;

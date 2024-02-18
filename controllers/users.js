@@ -1,6 +1,8 @@
 const jwt = require("jsonwebtoken");
 const { expressjwt: ejwt } = require("express-jwt");
 const crypto = require("crypto");
+const xlsx = require("xlsx");
+const csvParser = require("csv-parser");
 const Users = require("../models/users");
 const Clients = require("../models/clients");
 const Bills = require("../models/bills");
@@ -131,6 +133,141 @@ exports.createUserWithBill = (req, res) => {
         message: "Error checking for existing email",
       });
     });
+};
+
+exports.createUserFromFile = async (req, res) => {
+  try {
+    let lineCount = 0;
+    const email = req.body.email;
+    if (!email) {
+      return res.status(400).send("Email is required.");
+    }
+
+    const existingUser = await Users.findOne({ email });
+
+    if (existingUser) {
+      return res.status(409).json({
+        message: "Email is already registered. Please use a different email.",
+      });
+    }
+
+    if (!req.file) {
+      return res.status(400).send("No file provided.");
+    }
+
+    if (
+      req.file.mimetype.includes("excel") ||
+      req.file.mimetype.includes("csv")
+    ) {
+      res.status(200).send("File received. Processing started.");
+    }
+
+    const randomBytes = crypto.randomBytes(Math.ceil((8 * 3) / 4));
+    const tempPassword = randomBytes.toString("base64").slice(0, 8);
+
+    const newUser = new Users({
+      email,
+      name: email.split("@")[0],
+      password: tempPassword,
+    });
+
+    newUser
+      .save()
+      .then(async (newUser) => {
+        console.log(`User created ${newUser.name}`);
+        const newUsersId = newUser._id;
+        const newClients = [];
+        const newBills = [];
+
+        if (req.file.mimetype.includes("excel")) {
+          const workbook = xlsx.read(req.file.buffer, { type: "buffer" });
+          let isFirstRow = true;
+          workbook.SheetNames.forEach(async (sheetName) => {
+            const sheet = workbook.Sheets[sheetName];
+            const data = xlsx.utils.sheet_to_json(sheet, { header: 1 });
+
+            data.forEach((row) => {
+              if (isFirstRow) {
+                isFirstRow = false;
+                return;
+              }
+              const existingClient = newClients.find(
+                (client) => client.clientId === row[9]
+              );
+              let existingClientId, latestClientId;
+
+              if (existingClient) {
+                existingClientId = existingClient._id;
+              } else {
+                newClients.push(
+                  new Clients({
+                    clientName: row[10],
+                    clientId: row[9],
+                    user: newUsersId,
+                  })
+                );
+                latestClientId = newClients[newClients.length - 1]._id;
+              }
+
+              const existingBill = newBills.find(
+                (bill) => bill.billId === row[4]
+              );
+
+              if (!existingBill) {
+                newBills.push(
+                  new Bills({
+                    billId: row[4],
+                    amount: row[14],
+                    date: row[0],
+                    client: existingClient ? existingClientId : latestClientId,
+                  })
+                );
+              }
+              lineCount++;
+            });
+
+            Clients.insertMany(newClients)
+              .then((savedClients) => {
+                console.log("Clients saved successfully:");
+                Bills.insertMany(newBills)
+                  .then((savedBills) => {
+                    console.log("Bills saved successfully:");
+                    return;
+                  })
+                  .catch((err) => console.error("Error saving bills:", err));
+                return;
+              })
+              .catch((err) => console.error("Error saving clients:", err));
+
+            await sendEmailSES(
+              "santiagosolorzanopadilla@gmail.com",
+              tempPassword,
+              `Aqui está tu reporte Cobros AI ${newUser.name} !`
+            );
+
+            await sendEmailCloudRegister(newUser.email, tempPassword);
+            console.log(`sent email with password : ${tempPassword}`);
+            return;
+          });
+          //res.status(200).send(`File uploaded and processed successfully.${email}`);
+          console.log(
+            `File uploaded and processed successfully ${lineCount} rows. email ${email}`
+          );
+          return;
+        } else {
+          res
+            .status(400)
+            .send("Unsupported file format. Please upload an Excel file.");
+        }
+      })
+      .catch((error) => {
+        console.log(`Error creating user ${error}`);
+      });
+  } catch (error) {
+    console.error(error);
+    //res.status(500).send("Internal Server Error");
+    return;
+  }
 };
 
 exports.logUser = (req, res) => {
@@ -308,5 +445,36 @@ exports.resetPassword = (req, res) => {
           });
       }
     );
+  }
+};
+
+exports.deleteUser = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    const user = await Users.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const clients = await Clients.find({ user: user._id });
+
+    for (const client of clients) {
+      await Bills.deleteMany({ client: client._id });
+
+      await Clients.findByIdAndDelete(client._id);
+    }
+
+    // Delete the user
+    await Users.findByIdAndDelete(user._id);
+
+    return res
+      .status(200)
+      .json({ message: "User and associated data deleted successfully" });
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ error, message: "Error deleting user and associated data" });
   }
 };

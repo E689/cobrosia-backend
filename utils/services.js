@@ -52,6 +52,11 @@ const countAiOn = async (clientId) => {
 //given the id of the client, update all of the bills
 const updateClientBills = async (clientId) => {};
 
+//given a userId send message to all bills that need follow up
+const sendEmailsToClients = async (userId) => {
+  //validate that for each bill that the user needs.
+};
+
 module.exports = {
   updateBillsCreditDays,
   countOverDueBillsfromClient,

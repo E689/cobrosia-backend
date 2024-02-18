@@ -2,14 +2,11 @@ const OpenAI = require("openai");
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_KEY,
 });
-const crypto = require("crypto");
-const xlsx = require("xlsx");
-const csvParser = require("csv-parser");
+
 const Clients = require("../models/clients");
 const Bills = require("../models/bills");
 const Users = require("../models/users");
-
-const { sendEmailSES, sendEmailCloudRegister } = require("./email");
+const { LOG_ENTRY_TYPE } = require("../constants");
 
 const classificationCode = async (text, bill) => {
   console.log("the bill is ", bill);
@@ -325,170 +322,12 @@ const classController = async (req, res) => {
   });
 };
 
-const fileController = async (req, res) => {
-  try {
-    let lineCount = 0;
-    const email = req.body.email;
-    if (!email) {
-      return res.status(400).send("Email is required.");
-    }
-
-    const existingUser = await Users.findOne({ email });
-
-    if (existingUser) {
-      return res.status(409).json({
-        message: "Email is already registered. Please use a different email.",
-      });
-    }
-
-    if (!req.file) {
-      return res.status(400).send("No file provided.");
-    }
-
-    if (
-      req.file.mimetype.includes("excel") ||
-      req.file.mimetype.includes("csv")
-    ) {
-      res.status(200).send("File received. Processing started.");
-    }
-
-    const randomBytes = crypto.randomBytes(Math.ceil((8 * 3) / 4));
-    const tempPassword = randomBytes.toString("base64").slice(0, 8);
-
-    const newUser = new Users({
-      email,
-      name: email.split("@")[0],
-      password: tempPassword,
-    });
-
-    newUser
-      .save()
-      .then(async (newUser) => {
-        console.log(`User created ${newUser.name}`);
-        const newUsersId = newUser._id;
-        const newClients = [];
-        const newBills = [];
-
-        if (req.file.mimetype.includes("excel")) {
-          const workbook = xlsx.read(req.file.buffer, { type: "buffer" });
-          let isFirstRow = true;
-          workbook.SheetNames.forEach(async (sheetName) => {
-            const sheet = workbook.Sheets[sheetName];
-            const data = xlsx.utils.sheet_to_json(sheet, { header: 1 });
-
-            data.forEach((row) => {
-              if (isFirstRow) {
-                isFirstRow = false;
-                return;
-              }
-              const existingClient = newClients.find(
-                (client) => client.clientId === row[9]
-              );
-              let existingClientId, latestClientId;
-
-              if (existingClient) {
-                existingClientId = existingClient._id;
-              } else {
-                newClients.push(
-                  new Clients({
-                    clientName: row[10],
-                    clientId: row[9],
-                    user: newUsersId,
-                  })
-                );
-                latestClientId = newClients[newClients.length - 1]._id;
-              }
-
-              const existingBill = newBills.find(
-                (bill) => bill.billId === row[4]
-              );
-
-              if (!existingBill) {
-                newBills.push(
-                  new Bills({
-                    billId: row[4],
-                    amount: row[14],
-                    date: row[0],
-                    client: existingClient ? existingClientId : latestClientId,
-                  })
-                );
-              }
-              lineCount++;
-            });
-
-            Clients.insertMany(newClients)
-              .then((savedClients) => {
-                console.log("Clients saved successfully:");
-                Bills.insertMany(newBills)
-                  .then((savedBills) => {
-                    console.log("Bills saved successfully:");
-                    return;
-                  })
-                  .catch((err) => console.error("Error saving bills:", err));
-                return;
-              })
-              .catch((err) => console.error("Error saving clients:", err));
-
-            await sendEmailSES(
-              "santiagosolorzanopadilla@gmail.com",
-              tempPassword,
-              `Aqui está tu reporte Cobros AI ${newUser.name} !`
-            );
-
-            await sendEmailCloudRegister(newUser.email, tempPassword);
-            console.log(`sent email with password : ${tempPassword}`);
-            return;
-          });
-          //res.status(200).send(`File uploaded and processed successfully.${email}`);
-          console.log(
-            `File uploaded and processed successfully ${lineCount} rows. email ${email}`
-          );
-          return;
-        } else {
-          res
-            .status(400)
-            .send("Unsupported file format. Please upload an Excel file.");
-        }
-      })
-      .catch((error) => {
-        console.log(`Error creating user ${error}`);
-      });
-  } catch (error) {
-    console.error(error);
-    //res.status(500).send("Internal Server Error");
-    return;
-  }
-};
-
-const logEvent = (billId, event, message) => {
-  const newLog = {};
-  switch (event) {
-    case 1:
-      // Created bill
-      newLog.msg = message;
-      break;
-    case 2:
-      // AI on
-      newLog.msg = message;
-      break;
-    case 3:
-      // AI off
-      newLog.msg = message;
-      break;
-    case 4:
-      // Message sent
-      newLog.msg = message;
-      break;
-    case 5:
-      // Message received
-      newLog.msg = message;
-      break;
-    case 6:
-      // Bill canceled
-      newLog.msg = message;
-      break;
-    default:
-  }
+const logEvent = async (billId, eventCase, message) => {
+  const newLog = {
+    date: new Date(),
+    case: eventCase,
+    message,
+  };
 
   Bills.findByIdAndUpdate(billId, { $push: { log: newLog } }, { new: true })
     .then((updatedBill) => {
@@ -519,5 +358,4 @@ module.exports = {
   logController,
   mensajeController,
   classController,
-  fileController,
 };

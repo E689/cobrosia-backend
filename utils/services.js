@@ -42,7 +42,7 @@ const countOverDueBillsfromClient = async (clientId) => {
   const totalPastDueDateBills =
     overdueCount.a + overdueCount.b + overdueCount.c;
   console.log("countOverDueBillsfromClient(id)");
-  return { totalPastDueDateBills, overdueCount, bills };
+  return { totalPastDueDateBills, overdueCount };
 };
 
 const countAiOn = async (clientId) => {

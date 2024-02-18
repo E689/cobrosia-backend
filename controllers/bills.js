@@ -253,10 +253,12 @@ exports.getBillsByClientId = async (req, res) => {
       return res.status(404).json({ message: "Client not found" });
     }
 
-    const { totalPastDueDateBills, overdueCount, bills } =
+    const { totalPastDueDateBills, overdueCount } =
       await countOverDueBillsfromClient(id);
 
     const aiOn = await countAiOn(id);
+
+    const bills = await Bills.find({ client: id });
 
     return res.status(200).json({
       bills,

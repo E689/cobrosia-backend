@@ -6,8 +6,16 @@ const xlsx = require("xlsx");
 const { LOG_ENTRY_TYPE } = require("../constants");
 
 exports.createBill = async (req, res) => {
-  const { amount, date, status, clientId, billId, context, clientName } =
-    req.body;
+  const {
+    amount,
+    date,
+    status,
+    clientId,
+    billId,
+    context,
+    clientName,
+    userId,
+  } = req.body;
   if (!amount || !date || !status || !clientId || !billId) {
     return res.status(400).json({
       message:
@@ -19,7 +27,7 @@ exports.createBill = async (req, res) => {
   try {
     client = await Clients.findOne({ cliendId: clientId });
     if (!client) {
-      const clientData = { clientId };
+      const clientData = { clientId, user: userId };
       if (clientName) {
         clientData.clientName = clientName;
       }

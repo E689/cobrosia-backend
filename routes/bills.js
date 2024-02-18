@@ -46,6 +46,8 @@ const {
  *               type: string
  *             context:
  *               type: string
+ *             userId:
+ *               type: string
  *     responses:
  *       200:
  *         description: bill saved

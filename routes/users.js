@@ -13,7 +13,8 @@ const {
   createUserWithBill,
   createUserFromFile,
   deleteUser,
-  updateAllBills,
+  updateAllBillsByUser,
+  emailAllBillsByUser,
 } = require("../controllers/users");
 
 const {} = require("../utils/utilityFile");
@@ -313,6 +314,8 @@ router.post("/users/reset-password", resetPassword);
  */
 router.delete("/users/delete", deleteUser);
 
-router.get("/users/update/:id", updateAllBills);
+router.get("/users/update/:id", updateAllBillsByUser);
+
+router.get("/users/email/:id", emailAllBillsByUser);
 
 module.exports = router;

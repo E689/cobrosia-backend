@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 const crypto = require("crypto");
-
+const Flows = require("../models/flows");
+const { ObjectId } = mongoose.Schema;
 const usersSchema = new mongoose.Schema(
   {
     email: {
@@ -27,9 +28,19 @@ const usersSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+    flows: [{ type: ObjectId, ref: "Flows" }],
   },
   { timestamps: true }
 );
+
+usersSchema.pre("save", async function (next) {
+  if (this.isNew && this.flows.length === 0) {
+    const defaultFlow = new Flows();
+    await defaultFlow.save();
+    this.flows.push(defaultFlow._id);
+  }
+  next();
+});
 
 // virtual fields
 usersSchema

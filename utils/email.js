@@ -17,7 +17,7 @@ const ses = new AWS.SES({ apiVersion: "2010-12-01" });
 exports.sendEmailCloud = async (email, token) => {
   const response = await client.sendMessage({
     to: email,
-    from: process.env.SEND_TEST,
+    from: process.env.EMAIL_FROM,
     plain: `Gracias por usar Cobros AI. Te adjuntamos un nuevo password: ${token} ingresa y cambialo en la opcion cambiar contraseña. `,
     html: `<h2>Gracias por usar Cobros AI. Te adjuntamos un nuevo password: <h1>${token}</h1> ingresa y cambialo en la opcion cambiar contraseña. </h2>`,
     subject: "Aqui esta tu nuevo password temporal",
@@ -29,7 +29,7 @@ exports.sendEmailCloud = async (email, token) => {
 exports.sendEmailCloudParams = async (email, params) => {
   const response = await client.sendMessage({
     to: email,
-    from: process.env.SEND_TEST,
+    from: process.env.EMAIL_FROM,
     plain: params.content,
     html: params.content,
     subject: params.subject,
@@ -41,7 +41,7 @@ exports.sendEmailCloudParams = async (email, params) => {
 exports.sendEmailCloudRegister = async (email, token) => {
   const response = await client.sendMessage({
     to: email,
-    from: process.env.SEND_TEST,
+    from: process.env.EMAIL_FROM,
     plain: `Gracias por usar Cobros AI. \n Adjunto tu reporte de Facturas y Clientes. En este podrias ver todas tus facturas y clientes listas para revisar datos y comenzar a utilizar el seguimiento AI.\n Accede al tablero con vistas, tablas y muchos mas. Gratis por una hora. En cobros.ai usa esta direccion de  email y la contraseña temporal de abajo: \n ${token}`,
     html: `<h1> Gracias por usar Cobros AI.</h1> \n <h2> Adjunto tu reporte de Facturas y Clientes. En este podrias ver todas tus facturas y clientes listas para revisar datos y comenzar a utilizar el seguimiento AI.</h2>\n <h2> Accede al tablero con vistas, tablas y muchos mas.</h2> <h2> Gratis por una hora. En cobros.ai usa tu direccion de  email y la contraseña temporal de abajo:</h2> <h1> \n ${token} </h1`,
     subject: "Aqui esta tu reporte Cobros AI",

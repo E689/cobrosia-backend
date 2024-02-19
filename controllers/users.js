@@ -484,9 +484,32 @@ exports.deleteUser = async (req, res) => {
   }
 };
 
-exports.updateAllBills = async (req, res) => {
+exports.updateAllBillsByUser = async (req, res) => {
   const userId = req.params.id;
   await updateUserClientBills(userId);
 
   res.status(200).json({ message: "all updated" });
+};
+
+exports.emailAllBillsByUser = async (req, res) => {
+  const userId = req.params.id;
+
+  const clients = await Clients.find({ user: userId });
+
+  for (const client of clients) {
+    //set the clients Flow
+    //here I determine the cases what to do
+    // if   pre, payconfirmation,payDelay,collectionIgnored
+
+    const bills = await Bills.find({ client: client._id });
+    for (const bill of bills) {
+      //take out bill creditDays
+      //take out log
+      //generate message
+      //send message
+      //log message
+    }
+  }
+
+  res.status(200).json({ message: "emails sent" });
 };

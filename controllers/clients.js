@@ -124,7 +124,6 @@ exports.getClients = (req, res) => {
     });
 };
 
-//modify swagger
 exports.updateClient = (req, res) => {
   const clientId = req.params.id;
   const updatedFields = req.body;
@@ -148,56 +147,6 @@ exports.updateClient = (req, res) => {
 
   Promise.all([updateClientPromise, updateBillsPromise])
     .then(([updatedClient, _]) => {
-      if (!updatedClient) {
-        return res.status(404).json({
-          message: "Client not found",
-        });
-      }
-
-      return res.status(200).json({
-        message: "Client updated",
-        updatedClient,
-      });
-    })
-    .catch((error) => {
-      console.log(error);
-      return res.status(500).json({
-        error,
-        message: "Error updating client",
-      });
-    });
-};
-
-exports.updateClientDep = (req, res) => {
-  const clientId = req.params.id;
-  const { clientName, contactName, contactLastName, phone, email } = req.body;
-
-  if (
-    !clientId ||
-    !clientName ||
-    !contactName ||
-    !contactLastName ||
-    !phone ||
-    !email
-  ) {
-    return res.status(400).json({
-      message:
-        "Missing parameters. Please enter clientId, clientName, contactName, contactLastName, phone, email",
-    });
-  }
-
-  Clients.findByIdAndUpdate(
-    clientId,
-    {
-      clientName,
-      contactName,
-      contactLastName,
-      phone,
-      email,
-    },
-    { new: true }
-  )
-    .then((updatedClient) => {
       if (!updatedClient) {
         return res.status(404).json({
           message: "Client not found",

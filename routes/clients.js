@@ -93,7 +93,7 @@ router.post("/clients", createClient);
  *       500:
  *         description: Internal error
  */
-router.get("/clients/:id", getClientsByUser);
+router.get("/clients/user/:id", getClientsByUser);
 /**
  * @swagger
  * /clients/{id}:

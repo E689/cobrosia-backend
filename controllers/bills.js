@@ -4,11 +4,7 @@ const Users = require("../models/users");
 const xlsx = require("xlsx");
 
 const { LOG_ENTRY_TYPE } = require("../constants");
-const {
-  updateBillsCreditDays,
-  countOverDueBillsfromClient,
-  countAiOn,
-} = require("../utils/services");
+const { countAiOn } = require("../utils/services");
 
 exports.createBill = async (req, res) => {
   const { amount, date, clientId, billId, context, clientName, userId } =
@@ -261,10 +257,12 @@ exports.getBillsByClientId = async (req, res) => {
       clientName: bill.client.clientName,
       clientId: bill.client.clientId,
       client: bill.client._id,
+      log: bill._id,
     }));
 
     return res.status(200).json({
       bills: refactoredBills,
+      countAi: await countAiOn(id),
       message: "bills from client retrieved",
     });
   } catch (e) {

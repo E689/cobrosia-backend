@@ -13,6 +13,7 @@ const {
   createUserWithBill,
   createUserFromFile,
   deleteUser,
+  updateAllBills,
 } = require("../controllers/users");
 
 const {} = require("../utils/utilityFile");
@@ -311,5 +312,7 @@ router.post("/users/reset-password", resetPassword);
  *         description: Internal error
  */
 router.delete("/users/delete", deleteUser);
+
+router.get("/users/update/:id", updateAllBills);
 
 module.exports = router;

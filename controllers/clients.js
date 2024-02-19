@@ -1,6 +1,6 @@
 const Clients = require("../models/clients");
 const Bills = require("../models/bills");
-const { sendEmailCloudRegister, sendEmailCloud } = require("../utils/email");
+const { updateUserClientBills } = require("../utils/services");
 
 exports.createClient = (req, res) => {
   const { clientName, userId, contactName, contactLastName, phone, email } =
@@ -48,11 +48,14 @@ exports.createClient = (req, res) => {
 exports.getClientsByUser = async (req, res) => {
   try {
     const id = req.params.id;
+
+    await updateUserClientBills(id);
+
     const clients = await Clients.find({ user: id });
 
     return res.status(200).json({
       clients,
-      message: "Clients from user retrieved with contacts",
+      message: "Clients from user",
     });
   } catch (error) {
     return res.status(500).json({
@@ -88,23 +91,6 @@ exports.getClientById = async (req, res) => {
       message: "Error finding Client",
     });
   }
-};
-
-exports.getClients = (req, res) => {
-  const id = req.params.id;
-  Clients.find({ user: id })
-    .then((accessList) => {
-      return res.status(200).json({
-        accessList,
-        message: "Clients from user retrieved",
-      });
-    })
-    .catch((error) => {
-      return res.status(500).json({
-        error,
-        message: "Error finding Clients",
-      });
-    });
 };
 
 exports.updateClient = (req, res) => {

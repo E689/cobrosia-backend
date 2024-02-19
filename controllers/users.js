@@ -12,6 +12,7 @@ const {
   sendEmailSES,
 } = require("../utils/email");
 
+const { updateUserClientBills } = require("../utils/services");
 exports.createUser = (req, res) => {
   const { email, password } = req.body;
   if (!email || !password) {
@@ -481,4 +482,11 @@ exports.deleteUser = async (req, res) => {
       .status(500)
       .json({ error, message: "Error deleting user and associated data" });
   }
+};
+
+exports.updateAllBills = async (req, res) => {
+  const userId = req.params.id;
+  await updateUserClientBills(userId);
+
+  res.status(200).json({ message: "all updated" });
 };

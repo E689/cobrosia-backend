@@ -12,7 +12,7 @@ const {
   sendEmailSES,
 } = require("../utils/email");
 
-const { updateUserClientBills } = require("../utils/services");
+const { updateUserClientBills } = require("../services/bills");
 exports.createUser = (req, res) => {
   const { email, password } = req.body;
   if (!email || !password) {

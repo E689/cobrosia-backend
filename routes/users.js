@@ -17,7 +17,7 @@ const {
   emailAllBillsByUser,
 } = require("../controllers/users");
 
-const {} = require("../utils/utilityFile");
+const {} = require("../utils/ai");
 
 /**
  * @swagger

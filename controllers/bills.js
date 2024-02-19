@@ -4,7 +4,7 @@ const Users = require("../models/users");
 const xlsx = require("xlsx");
 
 const { LOG_ENTRY_TYPE } = require("../constants");
-const { countAiOn } = require("../utils/services");
+const { countAiOn } = require("../services/bills");
 
 exports.createBill = async (req, res) => {
   const { amount, date, clientId, billId, context, clientName, userId } =

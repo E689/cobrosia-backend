@@ -2,7 +2,7 @@ const {
   logController,
   mensajeController,
   classController,
-} = require("../utils/utilityFile.js");
+} = require("../utils/ai");
 
 exports.sendEmail = (req, res) => {
   res.send("sent email");

@@ -1,6 +1,6 @@
 const Clients = require("../models/clients");
 const Bills = require("../models/bills");
-const { updateUserClientBills, countAiOn } = require("../utils/services");
+const { updateUserClientBills, countAiOn } = require("../services/bills");
 
 exports.createClient = (req, res) => {
   const { clientName, userId, contactName, contactLastName, phone, email } =

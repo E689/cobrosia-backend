@@ -249,23 +249,22 @@ exports.getBillsByClientId = async (req, res) => {
   try {
     const id = req.params.id;
 
-    if (await !updateBillsCreditDays(id)) {
-      return res.status(404).json({ message: "Client not found" });
-    }
-
-    const { totalPastDueDateBills, overdueCount } =
-      await countOverDueBillsfromClient(id);
-
-    const aiOn = await countAiOn(id);
-
     const bills = await Bills.find({ client: id });
 
+    const refactoredBills = bills.map((bill) => ({
+      billId: bill.billId,
+      date: bill.date,
+      amount: bill.amount,
+      status: bill.status,
+      creditDays: bill.client.creditDays,
+      clientName: bill.client.clientName,
+      clientId: bill.client.clientId,
+      client: bill.client._id,
+    }));
+
     return res.status(200).json({
-      bills,
-      aiOn,
+      bills: refactoredBills,
       message: "bills from client retrieved",
-      totalPastDueDateBills,
-      overdueCount,
     });
   } catch (e) {
     return res.status(500).json({

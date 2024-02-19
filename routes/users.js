@@ -7,7 +7,6 @@ const upload = multer({ storage: storage });
 const {
   createUser,
   logUser,
-  activateUser,
   resetPassword,
   forgotPassword,
   changePassword,

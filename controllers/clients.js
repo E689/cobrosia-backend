@@ -68,8 +68,19 @@ exports.getClientById = async (req, res) => {
     const client = await Clients.findOne({ _id: id });
 
     return res.status(200).json({
-      client,
-      message: "Client retrieved",
+      client: {
+        clientId: client._id,
+        clientName: client.clientName,
+        nit: client.clientId,
+        creditDays: client.creditDays,
+        clientCollectionSchedule: client.clientCollectionSchedule,
+        contactName: client.contactName,
+        contactLastName: client.contactLastName,
+        email: client.email,
+        phone: client.phone,
+        aIToggle: client.ai,
+      },
+      message: "Client from user retrieved",
     });
   } catch (error) {
     return res.status(500).json({
@@ -77,34 +88,6 @@ exports.getClientById = async (req, res) => {
       message: "Error finding Client",
     });
   }
-};
-
-exports.getClient = (req, res) => {
-  const id = req.params.id;
-  Clients.find({ _id: id })
-    .then((client) => {
-      return res.status(200).json({
-        client: {
-          clientId: client._id,
-          clientName: client.clientName,
-          nit: client.clientId,
-          creditDays: client.creditDays,
-          clientCollectionSchedule: client.clientCollectionSchedule,
-          contactName: client.contactName,
-          contactLastName: client.contactLastName,
-          email: client.email,
-          phone: client.phone,
-          aIToggle: client.ai,
-        },
-        message: "Client from user retrieved",
-      });
-    })
-    .catch((error) => {
-      return res.status(500).json({
-        error,
-        message: "Error finding Client",
-      });
-    });
 };
 
 exports.getClients = (req, res) => {

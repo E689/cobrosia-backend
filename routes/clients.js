@@ -6,7 +6,7 @@ const {
   updateClient,
   deleteClient,
   getClientsByUser,
-  getClient,
+  getClientById,
 } = require("../controllers/clients");
 
 /**
@@ -207,5 +207,5 @@ router.delete("/clients/:id", deleteClient);
  *       500:
  *         description: Internal error
  */
-router.get("/client/:id", getClient);
+router.get("/client/:id", getClientById);
 module.exports = router;

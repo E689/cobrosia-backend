@@ -235,7 +235,10 @@ exports.getBillsByUserId = (req, res) => {
         log: bill._id,
       }));
 
+      const billsAiOn = bills.filter((bill) => bill.ai === true).length;
+
       return res.status(200).json({
+        billsAiOn,
         bills: refactoredBills,
         message: "bills from client retrieved",
       });

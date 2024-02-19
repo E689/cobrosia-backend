@@ -145,19 +145,24 @@ router.get("/bills/:id", getBillsByUserId);
 
 /**
  * @swagger
- * /bills/client/{id}:
- *   get:
+ * /bills/client:
+ *   post:
  *     summary: Get bills by client ID
  *     description: Retrieve bills associated with a specific client ID.
  *     tags:
  *       - Bills
  *     parameters:
- *       - in: path
- *         name: id
+ *       - in: body
+ *         name: getBillsByClientId
+ *         description: Request object for creating a new bill.
  *         required: true
- *         description: The ID of the client.
  *         schema:
- *           type: string
+ *           type: object
+ *           properties:
+ *             userId:
+ *               type: string
+ *             nit:
+ *               type: string
  *     responses:
  *       200:
  *         description: Bills from client retrieved
@@ -172,7 +177,7 @@ router.get("/bills/:id", getBillsByUserId);
  *             error: Error finding bills
  *             message: Error finding bills
  */
-router.get("/bills/client/:id", getBillsByClientId);
+router.post("/bills/client", getBillsByClientId);
 
 /**
  * @swagger

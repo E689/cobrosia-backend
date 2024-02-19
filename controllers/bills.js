@@ -250,9 +250,12 @@ exports.getBillsByUserId = (req, res) => {
 
 exports.getBillsByClientId = async (req, res) => {
   try {
-    const id = req.params.id;
+    const userId = req.body.userId;
+    const nit = req.body.nit;
 
-    const bills = await Bills.find({ client: id });
+    const clientId = await Clients.find({ user: userId, clientId: nit });
+
+    const bills = await Bills.find({ client: clientId });
 
     const refactoredBills = bills.map((bill) => ({
       billId: bill.billId,
@@ -266,9 +269,14 @@ exports.getBillsByClientId = async (req, res) => {
       log: bill._id,
     }));
 
+    const billsAiOn = await Bills.countDocuments({
+      client: clientId,
+      ai: true,
+    });
+
     return res.status(200).json({
       bills: refactoredBills,
-      countAi: await countAiOn(id),
+      billsAiOn,
       message: "bills from client retrieved",
     });
   } catch (e) {

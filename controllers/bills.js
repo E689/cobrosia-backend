@@ -279,7 +279,7 @@ exports.getBillsByClientId = async (req, res) => {
       billsAiOn,
       message: "bills from client retrieved",
     });
-  } catch (e) {
+  } catch (error) {
     return res.status(500).json({
       error,
       message: "Error finding bills",

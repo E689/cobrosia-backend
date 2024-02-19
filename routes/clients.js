@@ -70,7 +70,7 @@ const {
 router.post("/clients", createClient);
 /**
  * @swagger
- * /clients/{id}:
+ * /clients/user/{id}:
  *   get:
  *     summary: Get clients from user
  *     description:  Get clients from user

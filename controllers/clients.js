@@ -50,11 +50,25 @@ exports.getClientsByUser = async (req, res) => {
     const id = req.params.id;
 
     await updateUserClientBills(id);
-    const billsAiOn = await countAiOn(id);
     const clients = await Clients.find({ user: id });
 
+    const refactoredClients = clients.map((client) => ({
+      clientId: client._id,
+      clientName: client.clientName,
+      nit: client.clientId,
+      creditDays: client.creditDays,
+      clientCollectionSchedule: client.clientCollectionSchedule,
+      contactName: client.contactName,
+      contactLastName: client.contactLastName,
+      email: client.email,
+      phone: client.phone,
+      aIToggle: client.ai,
+    }));
+
+    const billsAiOn = await Clients.countDocuments({ user: id, ai: true });
+
     return res.status(200).json({
-      clients,
+      clients: refactoredClients,
       billsAiOn,
       message: "Clients from user",
     });

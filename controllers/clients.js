@@ -1,6 +1,6 @@
 const Clients = require("../models/clients");
 const Bills = require("../models/bills");
-const { updateUserClientBills } = require("../utils/services");
+const { updateUserClientBills, countAiOn } = require("../utils/services");
 
 exports.createClient = (req, res) => {
   const { clientName, userId, contactName, contactLastName, phone, email } =
@@ -50,11 +50,12 @@ exports.getClientsByUser = async (req, res) => {
     const id = req.params.id;
 
     await updateUserClientBills(id);
-
+    const billsAiOn = await countAiOn(id);
     const clients = await Clients.find({ user: id });
 
     return res.status(200).json({
       clients,
+      billsAiOn,
       message: "Clients from user",
     });
   } catch (error) {

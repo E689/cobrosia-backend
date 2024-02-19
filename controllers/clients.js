@@ -63,7 +63,14 @@ exports.getClientsByUser = async (req, res) => {
       email: client.email,
       phone: client.phone,
       aIToggle: client.ai,
-      ...client,
+      expired: client.expired,
+      lowExpired: client.lowExpired,
+      mediumExpired: client.mediumExpired,
+      highExpired: client.highExpired,
+      criticalExpired: client.criticalExpired,
+      lastMessage: client.lastMessage,
+      ignoredMsgs: client.ignoredMsgs,
+      brokenPromises: client.brokenPromises,
     }));
 
     const clientsAiOn = await Clients.countDocuments({ user: id, ai: true });

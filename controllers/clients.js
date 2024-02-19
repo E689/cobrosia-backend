@@ -63,13 +63,14 @@ exports.getClientsByUser = async (req, res) => {
       email: client.email,
       phone: client.phone,
       aIToggle: client.ai,
+      ...client,
     }));
 
-    const billsAiOn = await Clients.countDocuments({ user: id, ai: true });
+    const clientsAiOn = await Clients.countDocuments({ user: id, ai: true });
 
     return res.status(200).json({
       clients: refactoredClients,
-      billsAiOn,
+      clientsAiOn,
       message: "Clients from user",
     });
   } catch (error) {

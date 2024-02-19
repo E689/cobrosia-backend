@@ -24,7 +24,7 @@ const options = {
           "Create, List, Update and Delete bills belonging to clients.",
       },
       {
-        name: "BillingFlows",
+        name: "Flows",
         description: "AI billing flows associated to the clients bills.",
       },
       // {

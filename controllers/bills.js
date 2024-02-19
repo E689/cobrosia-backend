@@ -165,7 +165,13 @@ exports.createBillsFromFile = (req, res) => {
               date: row[0],
               billStatus: row[15],
               client: existingClient ? existingClientId : latestClientId,
-              // agregar al log que se creo la factura
+              log: [
+                {
+                  date: new Date(),
+                  case: LOG_ENTRY_TYPE.BILL_CREATED,
+                  message: "Bill created",
+                },
+              ],
             });
             newBills.push(createdBill);
             newBillsSave.push(createdBill);

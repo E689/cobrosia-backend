@@ -255,7 +255,7 @@ exports.getBillsByClientId = async (req, res) => {
 
     const clientId = await Clients.find({ user: userId, clientId: nit });
 
-    const bills = await Bills.find({ client: clientId });
+    const bills = await Bills.find({ client: clientId }).populate("client");
 
     const refactoredBills = bills.map((bill) => ({
       billId: bill.billId,

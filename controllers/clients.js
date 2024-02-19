@@ -82,9 +82,20 @@ exports.getClientById = async (req, res) => {
 exports.getClient = (req, res) => {
   const id = req.params.id;
   Clients.find({ _id: id })
-    .then((accessList) => {
+    .then((client) => {
       return res.status(200).json({
-        accessList,
+        client: {
+          clientId: client._id,
+          clientName: client.clientName,
+          nit: client.clientId,
+          creditDays: client.creditDays,
+          clientCollectionSchedule: client.clientCollectionSchedule,
+          contactName: client.contactName,
+          contactLastName: client.contactLastName,
+          email: client.email,
+          phone: client.phone,
+          aIToggle: client.ai,
+        },
         message: "Client from user retrieved",
       });
     })

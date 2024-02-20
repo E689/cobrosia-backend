@@ -290,17 +290,14 @@ const logEvent = async (billId, eventCase, message) => {
 };
 
 const sendEmailsToClients = async (userId) => {
-  console.log("2");
   const clients = await Clients.find({ user: userId }).populate("flow");
 
   for (const client of clients) {
     if (client.ai) {
-      console.log("4");
       const bills = await Bills.find({ client: client._id });
-      //enviar un correo
       //trabajar en el caso en el que es mas de una factura por cliente
-
-      const subject = "Cobro pendiente";
+      const billIdsString = bills.map((bill) => bill.billId).join(", ");
+      const subject = `Cobro pendiente facturas : ${billIdsString}`;
       const content = `<html>
       <body>
       <h1 style="color:blue;">Estimado cliente ${client.contactName} de ${client.clientName}</h1>
@@ -308,9 +305,7 @@ const sendEmailsToClients = async (userId) => {
       <h3>Haganos la campaña y nos paga,</h3>
       <h3>atentamente nosotros LA EMPRESA COBRADORA</h3>
       </body></html>`;
-      console.log(`A enviar correo a ${client.email}`);
       await sendEmailSES(client.email, content, subject);
-      console.log("5");
     }
   }
   return;

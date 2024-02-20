@@ -36,6 +36,8 @@ exports.readEmail = async (req, res) => {
 
   const { email } = JSON.parse(generatedText);
 
+  console.log(req.body);
+  console.log("creer");
   const subject = `Disculpe`;
   const content = `<html>
       <body>

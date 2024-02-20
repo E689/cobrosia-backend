@@ -16,12 +16,12 @@ exports.readEmail = async (req, res) => {
   const openAiResponse = await openai.chat.completions.create({
     messages: [
       {
-        role: "System",
+        role: "system",
         content:
           "I sent an email to a user. here is the entire response with the email i sent. please i need you to extract the email, the Ids that i placed on the subject. give me a json: {email,billId if its just one or [billId] } ",
       },
       {
-        role: "User",
+        role: "user",
         content: req.body.headers.from + req.body.headers.subject,
       },
     ],

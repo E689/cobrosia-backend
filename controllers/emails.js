@@ -44,7 +44,7 @@ exports.readEmail = async (req, res) => {
       <h3> y por que me dijo> ${req.body.reply_plain} </h3>
       <h3>atentamente nosotros LA EMPRESA COBRADORA</h3>
       </body></html>`;
-  await sendEmailSES(email, content, subject);
+  await sendEmailSES(email.toLowerCase(), content, subject);
   // getClient (email)
   // getBill (client Id, bill Id)
 

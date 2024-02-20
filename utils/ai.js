@@ -290,7 +290,7 @@ const logEvent = async (billId, eventCase, message) => {
 };
 
 const sendEmailsToClients = async (userId) => {
-  const clients = await Clients.find({ user: userId }).populate("flow");
+  const clients = await Clients.find({ user: userId }).populate("flows");
 
   for (const client of clients) {
     const context = [
@@ -299,13 +299,32 @@ const sendEmailsToClients = async (userId) => {
         content: AI_GENERAL_CONTEXT.BUSSINESS_DEFINITION,
       },
     ];
-    const flowArray = Object.keys(client.flow).map((key) => {
-      const value = client.flow[key];
-      return {
+    const flowArray = [
+      {
         role: "system",
-        content: value,
-      };
-    });
+        content: client.flows.preCollection,
+      },
+      {
+        role: "system",
+        content: client.flows.paymentConfirmation,
+      },
+      {
+        role: "system",
+        content: client.flows.paymentConfirmationVerify,
+      },
+      {
+        role: "system",
+        content: client.flows.paymentDelay,
+      },
+      {
+        role: "system",
+        content: client.flows.paymentDelayNewDate,
+      },
+      {
+        role: "system",
+        content: client.flows.collectionIgnored,
+      },
+    ];
 
     if (client.ai) {
       const bills = await Bills.find({ client: client._id });
@@ -318,12 +337,14 @@ const sendEmailsToClients = async (userId) => {
         if (bill.ai) {
           const transformedLog = bill.log.map((entry) => {
             return {
-              role: entry.role,
-              content: `on ${entry.date} : ${entry.content}`,
+              role: entry.role || "system",
+              content: `on ${entry.date} : ${entry.message}`,
             };
           });
 
           const billContext = [...context, ...flowArray, ...transformedLog];
+
+          console.log("billContext", billContext);
 
           const openAiResponse = await openai.chat.completions.create({
             messages: billContext,
@@ -353,7 +374,7 @@ const sendEmailsToClients = async (userId) => {
 
 const readEmail = async (email, billId, text) => {
   try {
-    const client = await Clients.findOne({ email }).populate("flow");
+    const client = await Clients.findOne({ email }).populate("flows");
     const bill = await Bills.findOne({ billId, client: client._id });
 
     if (!bill) {
@@ -367,15 +388,32 @@ const readEmail = async (email, billId, text) => {
         content: AI_GENERAL_CONTEXT.BUSSINESS_DEFINITION,
       },
     ];
-
-    const flowArray = Object.keys(client.flow).map((key) => {
-      const value = client.flow[key];
-      return {
+    const flowArray = [
+      {
         role: "system",
-        content: value,
-      };
-    });
-
+        content: client.flows.preCollection,
+      },
+      {
+        role: "system",
+        content: client.flows.paymentConfirmation,
+      },
+      {
+        role: "system",
+        content: client.flows.paymentConfirmationVerify,
+      },
+      {
+        role: "system",
+        content: client.flows.paymentDelay,
+      },
+      {
+        role: "system",
+        content: client.flows.paymentDelayNewDate,
+      },
+      {
+        role: "system",
+        content: client.flows.collectionIgnored,
+      },
+    ];
     context.push(flowArray);
 
     const transformedLog = bill.log.map((entry) => {

@@ -299,8 +299,8 @@ const sendEmailsToClients = async (userId) => {
         content: AI_GENERAL_CONTEXT.BUSSINESS_DEFINITION,
       },
     ];
-    const flowArray = Object.keys(client.flow._doc).map((key) => {
-      const value = client.flow._doc[key];
+    const flowArray = Object.keys(client.flow).map((key) => {
+      const value = client.flow[key];
       return {
         role: "system",
         content: value,
@@ -368,8 +368,8 @@ const readEmail = async (email, billId, text) => {
       },
     ];
 
-    const flowArray = Object.keys(client.flow._doc).map((key) => {
-      const value = client.flow._doc[key];
+    const flowArray = Object.keys(client.flow).map((key) => {
+      const value = client.flow[key];
       return {
         role: "system",
         content: value,

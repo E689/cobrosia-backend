@@ -293,19 +293,58 @@ const sendEmailsToClients = async (userId) => {
   const clients = await Clients.find({ user: userId }).populate("flow");
 
   for (const client of clients) {
+    const context = [
+      {
+        role: "system",
+        content: AI_GENERAL_CONTEXT.BUSSINESS_DEFINITION,
+      },
+    ];
+    const flowArray = Object.entries(client.flow._doc).map(([key, value]) => {
+      return {
+        role: "system",
+        content: value,
+      };
+    });
+
     if (client.ai) {
       const bills = await Bills.find({ client: client._id });
       //trabajar en el caso en el que es mas de una factura por cliente
-      const billIdsString = bills.map((bill) => bill.billId).join(", ");
-      const subject = `Cobro pendiente facturas : ${billIdsString}`;
-      const content = `<html>
-      <body>
-      <h1 style="color:blue;">Estimado cliente ${client.contactName} de ${client.clientName}</h1>
-      <h3>Usted tiene ${bills.length} facturas pendientes con nosotros</h3>
-      <h3>Haganos la campaña y nos paga,</h3>
-      <h3>atentamente nosotros LA EMPRESA COBRADORA</h3>
-      </body></html>`;
-      await sendEmailSES(client.email, content, subject);
+      //por ahora vamos a mandar un email por factura en problema
+
+      // const billIdsString = bills.map((bill) => bill.billId).join(", ");
+
+      for (const bill of bills) {
+        if (bill.ai) {
+          const transformedLog = bill.log.map((entry) => {
+            return {
+              role: entry.role,
+              content: `on ${entry.date} : ${entry.content}`,
+            };
+          });
+
+          const billContext = [...context, ...flowArray, ...transformedLog];
+
+          const openAiResponse = await openai.chat.completions.create({
+            messages: billContext,
+            model: "gpt-3.5-turbo",
+          });
+          const generatedText = openAiResponse.choices[0].message.content;
+
+          // cuando sean varias facturas juntas?
+          //const subject = `Cobro pendiente facturas : ${billIdsString}`;
+          const subject = `Cobro pendiente facturas `;
+
+          const content = `<html>
+          <body>
+          <h1 style="color:blue;">Estimado cliente ${client.contactName} de ${client.clientName}</h1>
+          <h3>Dejeme decirle que: ${generatedText}</h3>
+          <h3>Haganos la campaña y nos paga,</h3>
+          <h3>atentamente nosotros LA EMPRESA COBRADORA</h3>
+          </body></html>`;
+          await sendEmailSES(client.email, content, subject);
+        }
+      }
+      //fin cliente
     }
   }
   return;
@@ -323,14 +362,14 @@ const readEmail = async (email, billId, text) => {
 
     const context = [
       {
-        role: "System",
+        role: "system",
         content: AI_GENERAL_CONTEXT.BUSSINESS_DEFINITION,
       },
     ];
 
     const flowArray = Object.entries(client.flow._doc).map(([key, value]) => {
       return {
-        role: "System",
+        role: "system",
         content: value,
       };
     });
@@ -348,7 +387,7 @@ const readEmail = async (email, billId, text) => {
 
     //push a new system message if necesary
     transformedLog.push({
-      role: "System",
+      role: "system",
       content: "Te doy mas contexto",
     });
 

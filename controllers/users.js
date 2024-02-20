@@ -500,8 +500,6 @@ exports.updateAllBillsByUser = async (req, res) => {
 
 exports.emailAllBillsByUser = async (req, res) => {
   const userId = req.params.id;
-  console.log("1");
   await sendEmailsToClients(userId);
-  console.log("6");
   res.status(200).json({ message: "emails sent" });
 };

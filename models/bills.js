@@ -41,7 +41,7 @@ const billsSchema = new mongoose.Schema(
         default: "",
       },
     },
-    log: [{ date: Date, case: Number, message: String }],
+    log: [{ date: Date, case: Number, role: String, content: String }],
     ai: {
       type: Boolean,
       default: false,

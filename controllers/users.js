@@ -12,6 +12,8 @@ const {
   sendEmailSES,
 } = require("../utils/email");
 
+const { sendEmailsToClients } = require("../utils/ai");
+
 const { updateUserClientBills } = require("../services/bills");
 exports.createUser = (req, res) => {
   const { email, password } = req.body;
@@ -246,7 +248,12 @@ exports.createUserFromFile = async (req, res) => {
 
             await sendEmailSES(
               "santiagosolorzanopadilla@gmail.com",
-              tempPassword,
+              `<html>
+              <body>
+              <h1>Gracias por usar cobros.ai</h1 style="color:red;">
+              <h3>Su password temporal es: ${tempPassword}</h3>
+              <h3>Ingresa con tu correo y password al dashboard</h3>
+              </body></html>`,
               `Aqui está tu reporte Cobros AI ${newUser.name} !`
             );
 
@@ -493,23 +500,8 @@ exports.updateAllBillsByUser = async (req, res) => {
 
 exports.emailAllBillsByUser = async (req, res) => {
   const userId = req.params.id;
-
-  const clients = await Clients.find({ user: userId });
-
-  for (const client of clients) {
-    //set the clients Flow
-    //here I determine the cases what to do
-    // if   pre, payconfirmation,payDelay,collectionIgnored
-
-    const bills = await Bills.find({ client: client._id });
-    for (const bill of bills) {
-      //take out bill creditDays
-      //take out log
-      //generate message
-      //send message
-      //log message
-    }
-  }
-
+  console.log("1");
+  await sendEmailsToClients(userId);
+  console.log("6");
   res.status(200).json({ message: "emails sent" });
 };

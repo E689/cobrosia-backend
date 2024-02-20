@@ -7,29 +7,32 @@ const flowsSchema = new mongoose.Schema(
     },
     preCollection: {
       type: String,
-      default: "Do nothing if creditDays are less or equal to 0",
+      default: "No hacer nada si aun quedan dias credito negativos",
     },
     paymentConfirmation: {
       type: String,
       default:
-        "If detected that user is willing to pay on time, thank him and ask him to send you a comprobation of payment",
+        "Si tiene intension de pagar, agradecerle y pedirle una confirmacion de deposito o numero de transferencia",
     },
     paymentConfirmationVerify: {
       type: String,
       default:
-        "If detected that user is willing to pay on time, thank him and ask him to send you a comprobation of payment",
+        "Si dice que ya se puede ir a traerl el pago, o que ya lo envio por aca o por otro medio, le agradecemos e indicamos que esta pendiente de verificacion",
     },
     paymentDelay: {
       type: String,
-      default: "ask the user for a new date of payment",
+      default:
+        "si dice que va a atrasarse, pedirle cuando podemos esperar el pago",
     },
     paymentDelayNewDate: {
       type: String,
-      default: "ask the user for a new date of payment",
+      default:
+        "si envia una nueva fecha de cobro le agradecemos y le decimos que es importante que pague a tiempo",
     },
     collectionIgnored: {
       type: String,
-      default: "get angrier",
+      default:
+        "si nos ignoro diciendo algo que no tiene relevancia con el cobro. responderle recordandole el cobro con urgencia",
     },
   },
   { timestamps: true }

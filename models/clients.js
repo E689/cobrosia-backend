@@ -57,9 +57,7 @@ const clientsSchema = new mongoose.Schema(
     brokenPromises: {
       type: Number,
     },
-    collectionFlow: {
-      type: String,
-    },
+    flow: { type: ObjectId, ref: "Flows" },
     user: { type: ObjectId, ref: "Users" },
   },
   { timestamps: true }

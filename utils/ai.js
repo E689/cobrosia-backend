@@ -6,7 +6,96 @@ const openai = new OpenAI({
 const Clients = require("../models/clients");
 const Bills = require("../models/bills");
 const Users = require("../models/users");
-const { LOG_ENTRY_TYPE } = require("../constants");
+const {
+  AI_GENERAL_CONTEXT,
+  LOG_ENTRY_TYPE,
+  LOG_ROLE,
+} = require("../constants");
+
+const { sendEmailSES } = require("./email");
+
+const mensajeController = async (req, res) => {
+  const { contactNumber, firstMessage, lastMessage } = req.body;
+  console.log("contact number", contactNumber);
+
+  getLogByPhone(contactNumber.slice(3), lastMessage);
+  return res.status(200).json({
+    message: `fallo exitosamente`,
+  });
+};
+
+const getLogByPhone = (phone, msg) => {
+  Clients.findOne({ phone })
+    .then((foundClient) => {
+      Bills.find({
+        $and: [{ client: foundClient._id }, { status: { $in: ["0", "1"] } }],
+      }).then(async (bills) => {
+        bills.forEach(async (bill) => {
+          if (bill.status === "2") {
+            return;
+          }
+
+          const logEntry = {
+            user: foundClient.contactName,
+            msg,
+          };
+          console.log("about to classify message");
+          // const respuesta = await classifyMessage(
+          //   `soy ${foundClient.contactName}, le debo ${bill.amount} y era para el ${bill.date} y le acabo de enviar este mensaje:${msg}`
+          // );
+
+          const { text, options } = await classificationCode(msg, bill);
+
+          fetch(process.env.ULTRAMSG_URL, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              token: process.env.ULTRAMSG_TOKEN,
+              to: `+502${phone}`,
+              body: `${text}`,
+            }),
+          })
+            .then((response) => response.json())
+            .then((data) => {
+              console.log(data);
+            })
+            .catch((error) => {
+              console.error("Fetch error:", error);
+            });
+
+          const logEntry2 = {
+            user: "GPT",
+            msg: text,
+          };
+          if (options.paid) {
+            Bills.updateOne(
+              { _id: bill._id },
+              {
+                $push: { log: [logEntry, logEntry2] },
+                $set: { status: "2" },
+              }
+            ).then((bill) => {
+              return;
+            });
+          }
+          Bills.updateOne(
+            { _id: bill._id },
+            {
+              $push: { log: [logEntry, logEntry2] },
+            }
+          ).then((bill) => {
+            return;
+          });
+        });
+      });
+    })
+    .catch((error) => {
+      console.log(error);
+      return;
+    });
+};
 
 const classificationCode = async (text, bill) => {
   console.log("the bill is ", bill);
@@ -110,110 +199,6 @@ const classificationCode = async (text, bill) => {
   }
 };
 
-const classifyMessage = async (msg) => {
-  const openAiResponse = await openai.chat.completions.create({
-    messages: [
-      {
-        role: "system",
-        content: `usted es un cobrador. Le voy a enviar una respuesta de un usuario ante un recordatorio de pago. respondale pidiendole que page amablemente. no te extiendas mucho.`,
-      },
-      { role: "user", content: msg },
-    ],
-    model: "gpt-3.5-turbo",
-  });
-  const generatedText = openAiResponse.choices[0].message.content;
-  return generatedText;
-};
-
-const getLogByPhone = (phone, msg) => {
-  Clients.findOne({ phone })
-    .then((foundClient) => {
-      Bills.find({
-        $and: [{ client: foundClient._id }, { status: { $in: ["0", "1"] } }],
-      }).then(async (bills) => {
-        bills.forEach(async (bill) => {
-          if (bill.status === "2") {
-            return;
-          }
-
-          const logEntry = {
-            user: foundClient.contactName,
-            msg,
-          };
-          console.log("about to classify message");
-          // const respuesta = await classifyMessage(
-          //   `soy ${foundClient.contactName}, le debo ${bill.amount} y era para el ${bill.date} y le acabo de enviar este mensaje:${msg}`
-          // );
-
-          const { text, options } = await classificationCode(msg, bill);
-
-          fetch(process.env.ULTRAMSG_URL, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              token: process.env.ULTRAMSG_TOKEN,
-              to: `+502${phone}`,
-              body: `${text}`,
-            }),
-          })
-            .then((response) => response.json())
-            .then((data) => {
-              console.log(data);
-            })
-            .catch((error) => {
-              console.error("Fetch error:", error);
-            });
-
-          const logEntry2 = {
-            user: "GPT",
-            msg: text,
-          };
-          if (options.paid) {
-            Bills.updateOne(
-              { _id: bill._id },
-              {
-                $push: { log: [logEntry, logEntry2] },
-                $set: { status: "2" },
-              }
-            ).then((bill) => {
-              return;
-            });
-          }
-          Bills.updateOne(
-            { _id: bill._id },
-            {
-              $push: { log: [logEntry, logEntry2] },
-            }
-          ).then((bill) => {
-            return;
-          });
-        });
-      });
-    })
-    .catch((error) => {
-      console.log(error);
-      return;
-    });
-};
-
-const funcionCatchy = async (firstMessage) => {
-  const openAiResponse = await openai.chat.completions.create({
-    messages: [
-      {
-        role: "system",
-        content: `responde a este mensaje naturalmente como si yo fuera tu: ${firstMessage}`,
-      },
-    ],
-    model: "gpt-3.5-turbo",
-  });
-  console.log("response del openAI");
-  console.log(openAiResponse);
-  const generatedText = openAiResponse.choices[0].message.content;
-  return generatedText;
-};
-
 const logController = (req, res) => {
   const user = "GPT";
   Bills.find({ status: { $in: ["0", "1"] } })
@@ -275,53 +260,6 @@ const logController = (req, res) => {
     });
 };
 
-const mensajeController = async (req, res) => {
-  const { contactNumber, firstMessage, lastMessage } = req.body;
-  console.log("contact number", contactNumber);
-
-  getLogByPhone(contactNumber.slice(3), lastMessage);
-  return res.status(200).json({
-    message: `fallo exitosamente`,
-  });
-
-  // const respuesta = await funcionCatchy(lastMessage);
-  // console.log("la respuesta es", respuesta);
-  // fetch(process.env.ULTRAMSG_URL, {
-  //   method: "POST",
-  //   headers: {
-  //     "Content-Type": "application/json",
-  //   },
-  //   body: JSON.stringify({
-  //     token: process.env.ULTRAMSG_TOKEN,
-  //     to: "+50248274591",
-  //     body: respuesta,
-  //   }),
-  // })
-  //   .then((response) => response.json())
-  //   .then((data) => {
-  //     console.log(data);
-  //     return res.status(200).json({
-  //       message: `mensaje enviado`,
-  //       data,
-  //     });
-  //   })
-  //   .catch((error) => {
-  //     console.error("Fetch error:", error);
-  //     return res.status(200).json({
-  //       message: `fallo exitosamente`,
-  //       error,
-  //     });
-  //   });
-};
-
-const classController = async (req, res) => {
-  const { text, phone } = req.body;
-  const respuesta = await classifyMessage(text);
-  return res.status(200).json({
-    message: `${respuesta}`,
-  });
-};
-
 const logEvent = async (billId, eventCase, message) => {
   const newLog = {
     date: new Date(),
@@ -351,11 +289,101 @@ const logEvent = async (billId, eventCase, message) => {
     });
 };
 
-module.exports = {
-  classificationCode,
-  getLogByPhone,
-  funcionCatchy,
-  logController,
-  mensajeController,
-  classController,
+const sendEmailsToClients = async (userId) => {
+  console.log("2");
+  const clients = await Clients.find({ user: userId }).populate("flow");
+
+  for (const client of clients) {
+    if (client.ai) {
+      console.log("4");
+      const bills = await Bills.find({ client: client._id });
+      //enviar un correo
+      //trabajar en el caso en el que es mas de una factura por cliente
+
+      const subject = "Cobro pendiente";
+      const content = `<html>
+      <body>
+      <h1 style="color:blue;">Estimado cliente ${client.contactName} de ${client.clientName}</h1>
+      <h3>Usted tiene ${bills.length} facturas pendientes con nosotros</h3>
+      <h3>Haganos la campaña y nos paga,</h3>
+      <h3>atentamente nosotros LA EMPRESA COBRADORA</h3>
+      </body></html>`;
+      console.log(`A enviar correo a ${client.email}`);
+      await sendEmailSES(client.email, content, subject);
+      console.log("5");
+    }
+  }
+  return;
 };
+
+const readEmail = async (email, billId, text) => {
+  try {
+    const client = await Clients.findOne({ email }).populate("flow");
+    const bill = await Bills.findOne({ billId, client: client._id });
+
+    if (!bill) {
+      console.log("No bill found");
+      return;
+    }
+
+    const context = [
+      {
+        role: "System",
+        content: AI_GENERAL_CONTEXT.BUSSINESS_DEFINITION,
+      },
+    ];
+
+    const flowArray = Object.entries(client.flow._doc).map(([key, value]) => {
+      return {
+        role: "System",
+        content: value,
+      };
+    });
+
+    context.push(flowArray);
+
+    const transformedLog = bill.log.map((entry) => {
+      return {
+        role: entry.role,
+        content: `on ${entry.date} : ${entry.content}`,
+      };
+    });
+
+    context.push(transformedLog);
+
+    //push a new system message if necesary
+    transformedLog.push({
+      role: "System",
+      content: "Te doy mas contexto",
+    });
+
+    transformedLog.push({
+      role: "user",
+      content: text,
+    });
+
+    const openAiResponse = await openai.chat.completions.create({
+      messages: transformedLog,
+      model: "gpt-3.5-turbo",
+    });
+    const generatedText = openAiResponse.choices[0].message.content;
+
+    //push generatedText to the log
+
+    //send the message back
+
+    return { answer: generatedText };
+  } catch (error) {
+    console.log(error);
+    return;
+  }
+};
+
+const getEmailandBillIdFromEmail = async (emailContent) => {
+  const openAiResponse = await openai.chat.completions.create({
+    messages: transformedLog,
+    model: "gpt-3.5-turbo",
+  });
+  const generatedText = openAiResponse.choices[0].message.content;
+};
+module.exports = { sendEmailsToClients, readEmail };

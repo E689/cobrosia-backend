@@ -1,3 +1,5 @@
+const Clients = require("../models/clients");
+const Bills = require("../models/bills");
 const { json } = require("express");
 const {
   logController,
@@ -34,27 +36,96 @@ exports.readEmail = async (req, res) => {
 
   console.log(generatedText);
 
-  const { email } = JSON.parse(generatedText);
+  const { email, billId } = JSON.parse(generatedText);
 
-  console.log(req.body.plain);
-  console.log("creer");
-  const subject = `Disculpe`;
-  const content = `<html>
-      <body>
-      <h1 style="color:blue;">Estimado cliente,</h1>
-      <h3>quien es usted?</h3>
-      <h3> y por que me dijo> ${req.body.plain} </h3>
-      <h3>atentamente nosotros LA EMPRESA COBRADORA</h3>
-      </body></html>`;
-  await sendEmailSES(email.toLowerCase(), content, subject);
-  // getClient (email)
-  // getBill (client Id, bill Id)
+  const client = await Clients.findOne({ email });
 
-  //use Log to generate a response
+  const context = [
+    {
+      role: "system",
+      content: AI_GENERAL_CONTEXT.BUSSINESS_DEFINITION,
+    },
+  ];
+  const flowArray = [
+    {
+      role: "system",
+      content: client.flows.preCollection,
+    },
+    {
+      role: "system",
+      content: client.flows.paymentConfirmation,
+    },
+    {
+      role: "system",
+      content: client.flows.paymentConfirmationVerify,
+    },
+    {
+      role: "system",
+      content: client.flows.paymentDelay,
+    },
+    {
+      role: "system",
+      content: client.flows.paymentDelayNewDate,
+    },
+    {
+      role: "system",
+      content: client.flows.collectionIgnored,
+    },
+  ];
 
-  //send response
+  if (client.ai) {
+    const bill = await Bills.findOne({ client: client._id });
 
-  //log the response
+    const transformedLog = bill.log.map((entry) => {
+      return {
+        role: entry.role || "system",
+        content: `on ${entry.date} : ${entry.message}`,
+      };
+    });
 
+    const billContext = [...context, ...flowArray, ...transformedLog];
+
+    billContext.push({
+      role: "user",
+      content: req.body.plain,
+    });
+
+    const openAiResponse = await openai.chat.completions.create({
+      messages: billContext,
+      model: "gpt-3.5-turbo",
+    });
+    const generatedText = openAiResponse.choices[0].message.content;
+    const subject = `Seguimiento ${billId}`;
+    const content = `<html>
+        <body>
+        <h1 style="color:blue;">Estimado cliente,</h1>
+        <h3>${generatedText} </h3>
+        <h3>atentamente</h3>
+        </body></html>`;
+    await sendEmailSES(email.toLowerCase(), content, subject);
+
+    await Bills.findOneAndUpdate(
+      { _id: bill._id },
+      {
+        $push: {
+          log: [
+            {
+              date: new Date(),
+              case: LOG_ENTRY_TYPE.MESSAGE_RECEIVED,
+              role: "user",
+              content: `${req.body.plain}`,
+            },
+            {
+              date: new Date(),
+              case: LOG_ENTRY_TYPE.MESSAGE_SENT,
+              role: "agent",
+              content: `${generatedText}`,
+            },
+          ],
+        },
+      },
+      { new: true }
+    );
+  }
   res.send("Email read and replied");
 };

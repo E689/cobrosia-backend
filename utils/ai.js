@@ -354,16 +354,29 @@ const sendEmailsToClients = async (userId) => {
 
           // cuando sean varias facturas juntas?
           //const subject = `Cobro pendiente facturas : ${billIdsString}`;
-          const subject = `Cobro pendiente facturas `;
+          const subject = `Cobro pendiente factura ${bill.billId} `;
 
           const content = `<html>
           <body>
           <h1 style="color:blue;">Estimado cliente ${client.contactName} de ${client.clientName}</h1>
-          <h3>Dejeme decirle que: ${generatedText}</h3>
-          <h3>Haganos la campaña y nos paga,</h3>
-          <h3>atentamente nosotros LA EMPRESA COBRADORA</h3>
+          <h3>${generatedText}</h3>
+          <h3>atentamente</h3>
           </body></html>`;
           await sendEmailSES(client.email, content, subject);
+          await Bills.findOneAndUpdate(
+            { _id: bill._id },
+            {
+              $push: {
+                log: {
+                  date: new Date(),
+                  case: LOG_ENTRY_TYPE.MESSAGE_SENT,
+                  role: "agent",
+                  content: `${generatedText}`,
+                },
+              },
+            },
+            { new: true }
+          );
         }
       }
       //fin cliente
@@ -443,7 +456,28 @@ const readEmail = async (email, billId, text) => {
     const generatedText = openAiResponse.choices[0].message.content;
 
     //push generatedText to the log
-
+    await Bills.findOneAndUpdate(
+      { _id: bill._id },
+      {
+        $push: {
+          log: [
+            {
+              date: new Date(),
+              case: LOG_ENTRY_TYPE.MESSAGE_RECEIVED,
+              role: "user",
+              content: `${text}`,
+            },
+            {
+              date: new Date(),
+              case: LOG_ENTRY_TYPE.MESSAGE_SENT,
+              role: "agent",
+              content: `${generatedText}`,
+            },
+          ],
+        },
+      },
+      { new: true }
+    );
     //send the message back
 
     return { answer: generatedText };

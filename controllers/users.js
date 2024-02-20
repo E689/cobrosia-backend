@@ -11,7 +11,7 @@ const {
   sendEmailCloud,
   sendEmailSES,
 } = require("../utils/email");
-
+const { LOG_ENTRY_TYPE } = require("../constants");
 const { sendEmailsToClients } = require("../utils/ai");
 
 const { updateUserClientBills } = require("../services/bills");
@@ -97,6 +97,14 @@ exports.createUserWithBill = (req, res) => {
                 date,
                 amount,
                 client: newClient._id,
+                log: [
+                  {
+                    date: new Date(),
+                    case: LOG_ENTRY_TYPE.BILL_CREATED,
+                    role: "system",
+                    content: `bill number ${billId} created`,
+                  },
+                ],
               };
 
               const newBill = new Bills(data);
@@ -227,6 +235,14 @@ exports.createUserFromFile = async (req, res) => {
                     amount: row[14],
                     date: row[0],
                     client: existingClient ? existingClientId : latestClientId,
+                    log: [
+                      {
+                        date: new Date(),
+                        case: LOG_ENTRY_TYPE.BILL_CREATED,
+                        role: "system",
+                        content: `bill number ${row[4]} created`,
+                      },
+                    ],
                   })
                 );
               }

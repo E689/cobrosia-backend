@@ -42,7 +42,8 @@ exports.createBill = async (req, res) => {
       {
         date: new Date(),
         case: LOG_ENTRY_TYPE.BILL_CREATED,
-        message: "Bill created",
+        role: "system",
+        content: `bill number ${billId} created`,
       },
     ],
   };
@@ -153,7 +154,8 @@ exports.createBillsFromFile = (req, res) => {
             existingBill.log.push({
               date: new Date(),
               case: LOG_ENTRY_TYPE.BILL_ANULLED,
-              message: "Bill ANULLED",
+              role: "system",
+              content: "Bill ANULLED",
             });
             updateBills.push(existingBill);
           }
@@ -169,7 +171,8 @@ exports.createBillsFromFile = (req, res) => {
                 {
                   date: new Date(),
                   case: LOG_ENTRY_TYPE.BILL_CREATED,
-                  message: "Bill created",
+                  role: "system",
+                  content: `bill number ${row[4]} created`,
                 },
               ],
             });
@@ -320,7 +323,11 @@ exports.deleteBill = (req, res) => {
 
 exports.updateBill = (req, res) => {
   const id = req.params.id;
-  const { amount, date, status, clientId, billId, context } = req.body;
+  const { amount, date, status, clientId, billId, context, ai } = req.body;
+
+  if (ai) {
+    //push log of ai on or off
+  }
 
   const updateData = {
     amount,

@@ -1,7 +1,7 @@
 const Clients = require("../models/clients");
 const Bills = require("../models/bills");
 const { updateUserClientBills, countAiOn } = require("../services/bills");
-
+const { LOG_ENTRY_TYPE } = require("../constants");
 exports.createClient = (req, res) => {
   const { clientName, userId, contactName, contactLastName, phone, email } =
     req.body;
@@ -134,9 +134,34 @@ exports.updateClient = (req, res) => {
   );
 
   const updateBillsPromise = ai
-    ? Bills.updateMany({ client: clientId }, { status: "Process", ai: true })
-    : Promise.resolve(null);
-
+    ? Bills.updateMany(
+        { client: clientId },
+        {
+          $set: { status: "Process", ai: true },
+          $push: {
+            log: {
+              date: new Date(),
+              case: LOG_ENTRY_TYPE.AI_ON,
+              role: "system",
+              content: `AI turned on`,
+            },
+          },
+        }
+      )
+    : Bills.updateMany(
+        { client: clientId },
+        {
+          $set: { status: "AIOff", ai: false },
+          $push: {
+            log: {
+              date: new Date(),
+              case: LOG_ENTRY_TYPE.AI_OFF,
+              role: "system",
+              content: `AI turned off`,
+            },
+          },
+        }
+      );
   Promise.all([updateClientPromise, updateBillsPromise])
     .then(([updatedClient, _]) => {
       if (!updatedClient) {

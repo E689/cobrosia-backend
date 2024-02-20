@@ -18,7 +18,7 @@ exports.readEmail = async (req, res) => {
       {
         role: "system",
         content:
-          "user is sending you an email address and numbers in this string. reply with this {email,billId}, with the email and billId with the numbers you find",
+          "user is sending you an email address and numbers in this string. reply with this valid json {email,billId}, with the email and billId with the numbers you find. If you find more than one numnber add them to an array billId:[number1,number2,...]",
       },
       {
         role: "user",

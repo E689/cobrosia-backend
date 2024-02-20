@@ -36,14 +36,14 @@ exports.readEmail = async (req, res) => {
 
   const { email } = JSON.parse(generatedText);
 
-  console.log(req.body);
+  console.log(req.body.plain);
   console.log("creer");
   const subject = `Disculpe`;
   const content = `<html>
       <body>
       <h1 style="color:blue;">Estimado cliente,</h1>
       <h3>quien es usted?</h3>
-      <h3> y por que me dijo> ${req.body.reply_plain} </h3>
+      <h3> y por que me dijo> ${req.body.plain} </h3>
       <h3>atentamente nosotros LA EMPRESA COBRADORA</h3>
       </body></html>`;
   await sendEmailSES(email.toLowerCase(), content, subject);

@@ -18,7 +18,7 @@ exports.readEmail = async (req, res) => {
       {
         role: "system",
         content:
-          "I sent an email to a user. here is the entire response with the email i sent. please i need you to extract only the email with no extra text, the Ids that i placed on the subject. give me a json: {email,billId if its just one or an array of billId if there are more than one } ",
+          "user is sending you an email address and numbers in this string. reply with this {email,billId}, with the email and billId with the numbers you find",
       },
       {
         role: "user",

@@ -5,6 +5,8 @@ const {
   classController,
 } = require("../utils/ai");
 
+const { sendEmailSES } = require("../utils/email");
+
 const OpenAI = require("openai");
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_KEY,

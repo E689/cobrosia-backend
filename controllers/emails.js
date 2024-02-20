@@ -1,3 +1,4 @@
+const { json } = require("express");
 const {
   logController,
   mensajeController,
@@ -31,16 +32,19 @@ exports.readEmail = async (req, res) => {
 
   console.log("recibi esto", generatedText, req.body.reply_plain);
 
-  // const subject = `Cobro pendiente facturas : ${billIdsString}`;
-  // const content = `<html>
-  //     <body>
-  //     <h1 style="color:blue;">Estimado cliente ${client.contactName} de ${client.clientName}</h1>
-  //     <h3>Comprendo :)</h3>
-  //     <h3>atentamente nosotros LA EMPRESA COBRADORA</h3>
-  //     </body></html>`;
-  // await sendEmailSES(client.email, content, subject);
-  //getClient (email)
-  //getBill (client Id, bill Id)
+  const { email } = JSON.parse(generatedText);
+
+  const subject = `Disculpe`;
+  const content = `<html>
+      <body>
+      <h1 style="color:blue;">Estimado cliente,</h1>
+      <h3>quien es usted?</h3>
+      <h3> y por que me dijo> ${req.body.reply_plain} </h3>
+      <h3>atentamente nosotros LA EMPRESA COBRADORA</h3>
+      </body></html>`;
+  await sendEmailSES(email, content, subject);
+  // getClient (email)
+  // getBill (client Id, bill Id)
 
   //use Log to generate a response
 

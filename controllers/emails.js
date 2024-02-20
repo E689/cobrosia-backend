@@ -9,7 +9,7 @@ exports.sendEmail = (req, res) => {
 };
 
 exports.readEmail = (req, res) => {
-  console.log(req.body.reply_plain);
+  console.log(req.body);
   console.log("eso fue plain");
   //Exctract email
   //Extract billId

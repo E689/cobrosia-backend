@@ -21,7 +21,7 @@ exports.readEmail = async (req, res) => {
       {
         role: "system",
         content:
-          "user is sending you an email address and numbers in this string. reply with this valid json {email,billId}, with the email and billId with the numbers you find. If you find more than one numnber add them to an array billId:[number1,number2,...]",
+          "user is sending you an email address and numbers in this string. reply in valid JSON format, with the email and billId with the numbers you find. If you find more than one numnber add them to an array billId:[number1,number2,...]. need to parse it later",
       },
       {
         role: "user",
@@ -32,7 +32,7 @@ exports.readEmail = async (req, res) => {
   });
   const generatedText = openAiResponse.choices[0].message.content;
 
-  console.log("recibi esto", generatedText, req.body.reply_plain);
+  console.log(generatedText);
 
   const { email } = JSON.parse(generatedText);
 

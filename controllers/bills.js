@@ -367,6 +367,13 @@ exports.getLogByBillId = (req, res) => {
   const billId = req.params.id;
   Bills.findById(billId)
     .then((bill) => {
+      const refactoredLog = bill.log.map((entry) => ({
+        date: entry.date,
+        case: entry.case,
+        role: entry.role,
+        content: entry.content,
+      }));
+
       return res.status(200).json({
         log: bill.log,
         message: "log from bill retrieved",

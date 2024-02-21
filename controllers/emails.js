@@ -90,9 +90,25 @@ exports.readEmail = async (req, res) => {
 
     const billContext = [...context, ...flowArray, ...transformedLog];
 
+    const openAicleanEmail = await openai.chat.completions.create({
+      messages: [
+        {
+          role: "system",
+          content:
+            "user sent an email. I need to just extract the reply. Ignore everything that is about date received or the past conversation",
+        },
+        {
+          role: "user",
+          content: req.body.plain,
+        },
+      ],
+      model: "gpt-3.5-turbo",
+    });
+    const cleanEmail = openAicleanEmail.choices[0].message.content;
+
     billContext.push({
       role: "user",
-      content: req.body.plain,
+      content: openAicleanEmail,
     });
 
     const openAiResponse = await openai.chat.completions.create({
@@ -118,7 +134,7 @@ exports.readEmail = async (req, res) => {
               date: new Date(),
               case: LOG_ENTRY_TYPE.MESSAGE_RECEIVED,
               role: "user",
-              content: `${req.body.plain}`,
+              content: `${openAicleanEmail}`,
             },
             {
               date: new Date(),

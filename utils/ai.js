@@ -377,7 +377,7 @@ const sendEmailsToClients = async (userId) => {
                 log: {
                   date: new Date(),
                   case: LOG_ENTRY_TYPE.MESSAGE_SENT,
-                  role: "agent",
+                  role: "assistant",
                   content: `${generatedText}`,
                 },
               },
@@ -477,7 +477,7 @@ const readEmail = async (email, billId, text) => {
             {
               date: new Date(),
               case: LOG_ENTRY_TYPE.MESSAGE_SENT,
-              role: "agent",
+              role: "assistant",
               content: `${generatedText}`,
             },
           ],

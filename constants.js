@@ -10,8 +10,8 @@ const LOG_ENTRY_TYPE = {
 };
 
 const LOG_ROLE = {
-  SYSTEM: "System",
-  AGENT: "Agent",
+  SYSTEM: "system",
+  AGENT: "assistant",
   USER: "User",
 };
 

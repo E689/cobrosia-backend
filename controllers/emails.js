@@ -8,6 +8,11 @@ const {
 } = require("../utils/ai");
 
 const { sendEmailSES } = require("../utils/email");
+const {
+  AI_GENERAL_CONTEXT,
+  LOG_ENTRY_TYPE,
+  LOG_ROLE,
+} = require("../constants");
 
 const OpenAI = require("openai");
 const openai = new OpenAI({
@@ -38,7 +43,7 @@ exports.readEmail = async (req, res) => {
 
   const { email, billId } = JSON.parse(generatedText);
 
-  const client = await Clients.findOne({ email });
+  const client = await Clients.findOne({ email }).populate("flows");
 
   const context = [
     {

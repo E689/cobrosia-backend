@@ -98,13 +98,16 @@ exports.readEmail = async (req, res) => {
             "te envio una respuesta a un email. esta contiene el ultimo mensaje recibido y abajo toda la conversacion con direccion y fecha de recibido. Necesito que extraigas solamente el mensaje enviado sin modificar, ignorar las lineas de correos y fechas de enviado y recibido.",
         },
         {
-          role: "user",
+          role: "system",
           content: req.body.plain,
         },
       ],
       model: "gpt-3.5-turbo",
     });
     const cleanEmail = openAicleanEmail.choices[0].message.content;
+
+    console.log("vino", req.body.plain);
+    console.log("limpio", cleanEmail);
 
     billContext.push({
       role: "user",

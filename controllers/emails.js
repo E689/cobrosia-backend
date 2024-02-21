@@ -108,7 +108,7 @@ exports.readEmail = async (req, res) => {
 
     billContext.push({
       role: "user",
-      content: openAicleanEmail,
+      content: cleanEmail,
     });
 
     const openAiResponse = await openai.chat.completions.create({
@@ -134,7 +134,7 @@ exports.readEmail = async (req, res) => {
               date: new Date(),
               case: LOG_ENTRY_TYPE.MESSAGE_RECEIVED,
               role: "user",
-              content: `${openAicleanEmail}`,
+              content: `${cleanEmail}`,
             },
             {
               date: new Date(),

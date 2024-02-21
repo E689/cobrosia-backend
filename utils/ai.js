@@ -301,6 +301,9 @@ const sendEmailsToClients = async (userId) => {
       },
     ];
     console.log("3");
+
+    console.log(client);
+    console.log(client.flows);
     const flowArray = [
       {
         role: "system",

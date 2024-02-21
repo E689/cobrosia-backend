@@ -290,7 +290,7 @@ const logEvent = async (billId, eventCase, message) => {
 };
 
 const sendEmailsToClients = async (userId) => {
-  const clients = await Clients.find({ user: userId }).populate("flow");
+  const clients = await Clients.find({ user: userId }).populate("flows");
   console.log("1");
   for (const client of clients) {
     console.log("2");
@@ -301,12 +301,32 @@ const sendEmailsToClients = async (userId) => {
       },
     ];
     console.log("3");
-    const flowArray = Object.entries(client.flow._doc).map(([key, value]) => {
-      return {
+    const flowArray = [
+      {
+        role: "system",
+        content: client.flows.preCollection,
+      },
+      {
+        role: "system",
+        content: client.flows.paymentConfirmation,
+      },
+      {
+        role: "system",
+        content: client.flows.paymentConfirmationVerify,
+      },
+      {
+        role: "system",
+        content: client.flows.paymentDelay,
+      },
+      {
+        role: "system",
+        content: client.flows.paymentDelayNewDate,
+      },
+      {
         role: "system",
         content: value,
-      };
-    });
+      },
+    ];
 
     console.log("4");
     if (client.ai) {
@@ -323,12 +343,14 @@ const sendEmailsToClients = async (userId) => {
           const transformedLog = bill.log.map((entry) => {
             console.log("7");
             return {
-              role: entry.role,
-              content: `on ${entry.date} : ${entry.content}`,
+              role: entry.role || "system",
+              content: `on ${entry.date} : ${entry.message}`,
             };
           });
 
           const billContext = [...context, ...flowArray, ...transformedLog];
+
+          console.log("billContext", billContext);
 
           const openAiResponse = await openai.chat.completions.create({
             messages: billContext,
@@ -339,17 +361,30 @@ const sendEmailsToClients = async (userId) => {
 
           // cuando sean varias facturas juntas?
           //const subject = `Cobro pendiente facturas : ${billIdsString}`;
-          const subject = `Cobro pendiente facturas `;
+          const subject = `Cobro pendiente factura ${bill.billId} `;
 
           const content = `<html>
           <body>
           <h1 style="color:blue;">Estimado cliente ${client.contactName} de ${client.clientName}</h1>
-          <h3>Dejeme decirle que: ${generatedText}</h3>
-          <h3>Haganos la campaña y nos paga,</h3>
-          <h3>atentamente nosotros LA EMPRESA COBRADORA</h3>
+          <h3>${generatedText}</h3>
+          <h3>atentamente</h3>
           </body></html>`;
           console.log("9");
           await sendEmailSES(client.email, content, subject);
+          await Bills.findOneAndUpdate(
+            { _id: bill._id },
+            {
+              $push: {
+                log: {
+                  date: new Date(),
+                  case: LOG_ENTRY_TYPE.MESSAGE_SENT,
+                  role: "agent",
+                  content: `${generatedText}`,
+                },
+              },
+            },
+            { new: true }
+          );
         }
       }
       //fin cliente
@@ -360,7 +395,7 @@ const sendEmailsToClients = async (userId) => {
 
 const readEmail = async (email, billId, text) => {
   try {
-    const client = await Clients.findOne({ email }).populate("flow");
+    const client = await Clients.findOne({ email }).populate("flows");
     const bill = await Bills.findOne({ billId, client: client._id });
 
     if (!bill) {
@@ -374,14 +409,32 @@ const readEmail = async (email, billId, text) => {
         content: AI_GENERAL_CONTEXT.BUSSINESS_DEFINITION,
       },
     ];
-
-    const flowArray = Object.entries(client.flow._doc).map(([key, value]) => {
-      return {
+    const flowArray = [
+      {
         role: "system",
-        content: value,
-      };
-    });
-
+        content: client.flows.preCollection,
+      },
+      {
+        role: "system",
+        content: client.flows.paymentConfirmation,
+      },
+      {
+        role: "system",
+        content: client.flows.paymentConfirmationVerify,
+      },
+      {
+        role: "system",
+        content: client.flows.paymentDelay,
+      },
+      {
+        role: "system",
+        content: client.flows.paymentDelayNewDate,
+      },
+      {
+        role: "system",
+        content: client.flows.collectionIgnored,
+      },
+    ];
     context.push(flowArray);
 
     const transformedLog = bill.log.map((entry) => {
@@ -411,7 +464,28 @@ const readEmail = async (email, billId, text) => {
     const generatedText = openAiResponse.choices[0].message.content;
 
     //push generatedText to the log
-
+    await Bills.findOneAndUpdate(
+      { _id: bill._id },
+      {
+        $push: {
+          log: [
+            {
+              date: new Date(),
+              case: LOG_ENTRY_TYPE.MESSAGE_RECEIVED,
+              role: "user",
+              content: `${text}`,
+            },
+            {
+              date: new Date(),
+              case: LOG_ENTRY_TYPE.MESSAGE_SENT,
+              role: "agent",
+              content: `${generatedText}`,
+            },
+          ],
+        },
+      },
+      { new: true }
+    );
     //send the message back
 
     return { answer: generatedText };

@@ -37,7 +37,7 @@ exports.createFlow = async (req, res) => {
 
 exports.getFlow = async (req, res) => {
   try {
-    const flowId = req.body.id;
+    const flowId = req.params.id;
     const flow = await Flows.findById(flowId);
     return res.status(200).json({
       message: "Flow found",

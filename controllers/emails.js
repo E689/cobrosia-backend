@@ -95,7 +95,7 @@ exports.readEmail = async (req, res) => {
         {
           role: "system",
           content:
-            "te envio una respuesta a un email. esta contiene el ultimo mensaje recibido y abajo toda la conversacion con direccion y fecha de recibido. Necesito que extraigas solamente el mensaje enviado sin modificar, ignorar las lineas de correos y fechas de enviado y recibido.",
+            "te envio un email. necesito que extraigas el primer texto. todo lo que va despues lo ignoras. Ignora todo el resto de la conversacion. NO modifiques el texto. ",
         },
         {
           role: "system",

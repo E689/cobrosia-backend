@@ -307,23 +307,23 @@ const sendEmailsToClients = async (userId) => {
     const flowArray = [
       {
         role: "system",
-        content: client.flows[0].preCollection,
+        content: client.flows.preCollection,
       },
       {
         role: "system",
-        content: client.flows[0].paymentConfirmation,
+        content: client.flows.paymentConfirmation,
       },
       {
         role: "system",
-        content: client.flows[0].paymentConfirmationVerify,
+        content: client.flows.paymentConfirmationVerify,
       },
       {
         role: "system",
-        content: client.flows[0].paymentDelay,
+        content: client.flows.paymentDelay,
       },
       {
         role: "system",
-        content: client.flows[0].paymentDelayNewDate,
+        content: client.flows.paymentDelayNewDate,
       },
     ];
 

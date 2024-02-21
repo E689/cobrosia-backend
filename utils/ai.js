@@ -291,14 +291,16 @@ const logEvent = async (billId, eventCase, message) => {
 
 const sendEmailsToClients = async (userId) => {
   const clients = await Clients.find({ user: userId }).populate("flow");
-
+  console.log("1");
   for (const client of clients) {
+    console.log("2");
     const context = [
       {
         role: "system",
         content: AI_GENERAL_CONTEXT.BUSSINESS_DEFINITION,
       },
     ];
+    console.log("3");
     const flowArray = Object.entries(client.flow._doc).map(([key, value]) => {
       return {
         role: "system",
@@ -306,6 +308,7 @@ const sendEmailsToClients = async (userId) => {
       };
     });
 
+    console.log("4");
     if (client.ai) {
       const bills = await Bills.find({ client: client._id });
       //trabajar en el caso en el que es mas de una factura por cliente
@@ -313,9 +316,12 @@ const sendEmailsToClients = async (userId) => {
 
       // const billIdsString = bills.map((bill) => bill.billId).join(", ");
 
+      console.log("5");
       for (const bill of bills) {
+        console.log("6");
         if (bill.ai) {
           const transformedLog = bill.log.map((entry) => {
+            console.log("7");
             return {
               role: entry.role,
               content: `on ${entry.date} : ${entry.content}`,
@@ -329,6 +335,7 @@ const sendEmailsToClients = async (userId) => {
             model: "gpt-3.5-turbo",
           });
           const generatedText = openAiResponse.choices[0].message.content;
+          console.log("8");
 
           // cuando sean varias facturas juntas?
           //const subject = `Cobro pendiente facturas : ${billIdsString}`;
@@ -341,6 +348,7 @@ const sendEmailsToClients = async (userId) => {
           <h3>Haganos la campaña y nos paga,</h3>
           <h3>atentamente nosotros LA EMPRESA COBRADORA</h3>
           </body></html>`;
+          console.log("9");
           await sendEmailSES(client.email, content, subject);
         }
       }

@@ -499,7 +499,10 @@ exports.updateAllBillsByUser = async (req, res) => {
 };
 
 exports.emailAllBillsByUser = async (req, res) => {
+  console.log("0");
   const userId = req.params.id;
+  console.log("userId", userId);
   await sendEmailsToClients(userId);
+  console.log("10");
   res.status(200).json({ message: "emails sent" });
 };

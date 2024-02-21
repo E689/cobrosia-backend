@@ -123,7 +123,7 @@ exports.readEmail = async (req, res) => {
             {
               date: new Date(),
               case: LOG_ENTRY_TYPE.MESSAGE_SENT,
-              role: "agent",
+              role: "assistant",
               content: `${generatedText}`,
             },
           ],

@@ -44,7 +44,11 @@ exports.readEmail = async (req, res) => {
 
   const { email, billId } = JSON.parse(generatedText);
 
-  const respuesta = await readEmail(email, billId, req.body.plain);
+  const respuesta = await readEmail(
+    email.toLowerCase(),
+    billId,
+    req.body.plain
+  );
 
   const subject = `Seguimiento ${billId}`;
   const content = `<html>

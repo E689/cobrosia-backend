@@ -66,7 +66,7 @@ exports.getUserById = async (req, res) => {
       message: "User found",
       user: {
         companyName: user.companyName,
-        businessLogic: user.business,
+        businessLogic: user.businessLogic,
         assistantContext: user.assistantContext,
       },
     });

@@ -294,7 +294,7 @@ const sendEmailsToClients = async (userId) => {
   console.log("1");
   for (const client of clients) {
     if (!client.ai) {
-      return;
+      continue;
     }
     console.log("2");
     const context = [
@@ -304,7 +304,6 @@ const sendEmailsToClients = async (userId) => {
       },
     ];
     console.log("3");
-
     console.log(client);
     console.log(client.flow);
     const flowArray = [

@@ -6,10 +6,10 @@ const Flows = require("../models/flows");
 exports.createFlow = async (req, res) => {
   try {
     const { userId, flow } = req.body;
-
+    console.log(userId, flow);
     const newFlow = new Flows(flow);
     await newFlow.save();
-
+    console.log(newFlow);
     const updatedUser = await updatedUser.findByIdAndUpdate(
       userId,
       { $push: { flows: newFlow._id } },
@@ -17,7 +17,7 @@ exports.createFlow = async (req, res) => {
         new: true,
       }
     );
-
+    console.log(updatedUser);
     return res.status(200).json({
       message: "Flow created",
     });
@@ -38,8 +38,8 @@ exports.getFlow = async (req, res) => {
       flow,
     });
   } catch (error) {
+    console.log(error);
     return res.status(500).json({
-      error,
       message: "Error",
     });
   }

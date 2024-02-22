@@ -395,6 +395,7 @@ const sendEmailsToClients = async (userId) => {
 const readEmail = async (email, billId, text) => {
   try {
     const client = await Clients.findOne({ email }).populate("flow");
+    console.log(client);
     const bill = await Bills.findOne({ billId, client: client._id });
 
     if (!bill) {
@@ -427,6 +428,7 @@ const readEmail = async (email, billId, text) => {
       { role: "user", content: text },
     ];
 
+    console.log(intentionContext);
     const calssifyResponse = await openai.chat.completions.create({
       messages: intentionContext,
       model: "gpt-3.5-turbo",
@@ -437,33 +439,6 @@ const readEmail = async (email, billId, text) => {
       role: "user",
       content: text,
     });
-
-    const flowArray = [
-      {
-        role: "system",
-        content: client.flow.preCollection,
-      },
-      {
-        role: "system",
-        content: client.flow.paymentConfirmation,
-      },
-      {
-        role: "system",
-        content: client.flow.paymentConfirmationVerify,
-      },
-      {
-        role: "system",
-        content: client.flow.paymentDelay,
-      },
-      {
-        role: "system",
-        content: client.flow.paymentDelayNewDate,
-      },
-      {
-        role: "system",
-        content: client.flow.collectionIgnored,
-      },
-    ];
 
     //push a new system message if necesary
     context.push({
@@ -503,12 +478,14 @@ const readEmail = async (email, billId, text) => {
         content: `El usuario nos ignoro, nos dijo algo que no tiene sentido ${client.flow.collectionIgnored}`,
       });
     }
+    console.log("about to end response");
     const openAiResponse = await openai.chat.completions.create({
       messages: context,
       model: "gpt-3.5-turbo",
     });
     const generatedText = openAiResponse.choices[0].message.content;
 
+    console.log(generatedText);
     //push generatedText to the log
     await Bills.findOneAndUpdate(
       { _id: bill._id },

@@ -417,7 +417,7 @@ const readEmail = async (email, billId, text) => {
       };
     });
 
-    context.push(transformedLog);
+    context.push(...transformedLog);
 
     const intentionContext = [
       ...context,

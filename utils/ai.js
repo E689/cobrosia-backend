@@ -400,7 +400,7 @@ const readEmail = async (email, billId, text) => {
     console.log(client);
     const bill = await Bills.findOne({
       billId,
-      client: mongoose.Types.ObjectId(client._id),
+      client: new mongoose.Types.ObjectId(client._id),
     });
 
     if (!bill) {

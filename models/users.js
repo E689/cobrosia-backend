@@ -9,9 +9,14 @@ const usersSchema = new mongoose.Schema(
       required: true,
       unique: true,
     },
-    name: {
+    companyName: {
       type: String,
-      max: 32,
+    },
+    businessLogic: {
+      type: String,
+    },
+    assistantContext: {
+      type: String,
     },
     hashed_password: {
       type: String,

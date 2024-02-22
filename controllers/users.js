@@ -56,6 +56,52 @@ exports.createUser = (req, res) => {
     });
 };
 
+exports.getUserById = async (req, res) => {
+  try {
+    const userId = req.params.id;
+    const user = await Users.findById(userId);
+
+    return res.status(201).json({ message: "User found", user });
+  } catch (error) {
+    return res.status(500).json({
+      error: `Error getting user.`,
+    });
+  }
+};
+
+exports.updateUserById = async (req, res) => {
+  try {
+    const userId = req.params.id;
+    const { companyName, businessLogic, assistantContext } = req.body;
+
+    const updateData = {
+      companyName,
+      businessLogic,
+      assistantContext,
+    };
+
+    const updatedUser = await Users.findByIdAndUpdate(userId, updateData, {
+      new: true,
+    });
+
+    if (!updatedUser) {
+      return res.status(404).json({
+        message: "User not found",
+      });
+    }
+
+    return res.status(200).json({
+      message: "User updated",
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      error,
+      message: "Error updating user",
+    });
+  }
+};
+
 exports.createUserWithBill = (req, res) => {
   const { email, billId, amount, date, clientId, clientName } = req.body;
   if (!email || !billId || !amount || !date || !clientId || !clientName) {

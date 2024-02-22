@@ -15,6 +15,8 @@ const {
   deleteUser,
   updateAllBillsByUser,
   emailAllBillsByUser,
+  getUserById,
+  updateUserById,
 } = require("../controllers/users");
 
 const {} = require("../utils/ai");
@@ -56,6 +58,9 @@ const {} = require("../utils/ai");
  *
  */
 router.post("/users/register", createUser);
+
+router.get("/users/:id", getUserById);
+router.put("/users/:id", updateUserById);
 
 /**
  * @swagger

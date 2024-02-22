@@ -336,9 +336,10 @@ exports.createUserFromFile = async (req, res) => {
               <h3>Su password temporal es: ${tempPassword}</h3>
               <h3>Ingresa con tu correo y password al dashboard</h3>
               </body></html>`,
-              `Aqui está tu reporte Cobros AI ${newUser.name} !`,
-              `Aqui esta tu reporte de Cobros AI ${newUser.name} `
+              `Aqui está tu reporte Cobros AI`
             );
+
+            await exports.updateAllBillsByUser(newUsersId);
             console.log(`sent email with password : ${tempPassword}`);
             return;
           });

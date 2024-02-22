@@ -29,7 +29,7 @@ exports.readEmail = async (req, res) => {
       {
         role: "system",
         content:
-          "user will send you 2 texts. first is the Subject of an email. extract the number or numbers you find.next he will send you an email reply text I need you to extract the email. respond on this VALID JSON FORMAT FOR ME TO PARSE IT { email: email, billId : number or numers you find ",
+          "user will send you 2 texts. first is the Subject of an email. extract the number or numbers you find.next he will send you an email reply text I need you to extract the email. respond on this VALID JSON FORMAT FOR ME TO PARSE IT with email and billId ",
       },
       {
         role: "user",

@@ -62,7 +62,14 @@ exports.getUserById = async (req, res) => {
     console.log(userId);
     const user = await Users.findById(userId);
     console.log("user", user);
-    return res.status(201).json({ message: "User found", user });
+    return res.status(201).json({
+      message: "User found",
+      user: {
+        companyName: user.companyName,
+        businessLogic: user.business,
+        assistantContext: user.assistantContext,
+      },
+    });
   } catch (error) {
     return res.status(500).json({
       error: `Error getting user.`,

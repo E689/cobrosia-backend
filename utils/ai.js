@@ -451,31 +451,31 @@ const readEmail = async (email, billId, text) => {
       //paymentConfirmation
       context.push({
         role: "system",
-        content: `El usuario dice que va a pagar a tiempo y ${client.flow.paymentConfirmation}`,
+        content: `El usuario dice que va a pagar a tiempo y ${client.flow.paymentConfirmation}, respondele al cliente`,
       });
     } else if (userIntention.toLowerCase() === "two") {
       //paymentConfirmationVerify
       context.push({
         role: "system",
-        content: `El usuario dice que ya pago y ${client.flow.paymentConfirmationVerify}`,
+        content: `El usuario dice que ya pago y ${client.flow.paymentConfirmationVerify}, respondele al cliente`,
       });
     } else if (userIntention.toLowerCase() === "three") {
       //paymentDelay
       context.push({
         role: "system",
-        content: `El usuario dice que se atraso y ${client.flow.paymentDelay}`,
+        content: `El usuario dice que se atraso y ${client.flow.paymentDelay}, respondele al cliente`,
       });
     } else if (userIntention.toLowerCase() === "four") {
       //paymentDelayNewDate
       context.push({
         role: "system",
-        content: `El usuario dice nueva fecha de pago ${client.flow.paymentDelayNewDate}`,
+        content: `El usuario dice nueva fecha de pago ${client.flow.paymentDelayNewDate}, respondele al cliente`,
       });
     } else if (userIntention.toLowerCase() === "five") {
       //collectionIgnored
       context.push({
         role: "system",
-        content: `El usuario nos ignoro, nos dijo algo que no tiene sentido ${client.flow.collectionIgnored}`,
+        content: `El usuario nos ignoro, nos dijo algo que no tiene sentido ${client.flow.collectionIgnored}, respondele al cliente`,
       });
     }
     console.log("about to end response");

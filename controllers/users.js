@@ -327,7 +327,18 @@ exports.createUserFromFile = async (req, res) => {
               `Aqui está tu reporte Cobros AI ${newUser.name} !`
             );
 
-            await sendEmailCloudRegister(newUser.email, tempPassword);
+            //await sendEmailCloudRegister(newUser.email, tempPassword);
+            await emailParams(
+              newUser.email,
+              `<html>
+              <body>
+              <h1>Gracias por usar cobros.ai</h1>
+              <h3>Su password temporal es: ${tempPassword}</h3>
+              <h3>Ingresa con tu correo y password al dashboard</h3>
+              </body></html>`,
+              `Aqui está tu reporte Cobros AI ${newUser.name} !`,
+              `Aqui esta tu reporte de Cobros AI ${newUser.name} `
+            );
             console.log(`sent email with password : ${tempPassword}`);
             return;
           });

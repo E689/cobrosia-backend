@@ -10,7 +10,7 @@ exports.createFlow = async (req, res) => {
     const newFlow = new Flows(flow);
     await newFlow.save();
     console.log(newFlow);
-    const updatedUser = await updatedUser.findByIdAndUpdate(
+    const updatedUser = await Users.findByIdAndUpdate(
       userId,
       { $push: { flows: newFlow._id } },
       {

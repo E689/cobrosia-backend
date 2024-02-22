@@ -320,7 +320,7 @@ exports.createUserFromFile = async (req, res) => {
               "santiagosolorzanopadilla@gmail.com",
               `<html>
               <body>
-              <h1>Gracias por usar cobros.ai</h1 style="color:red;">
+              <h1>Gracias por usar cobros.ai</h1>
               <h3>Su password temporal es: ${tempPassword}</h3>
               <h3>Ingresa con tu correo y password al dashboard</h3>
               </body></html>`,

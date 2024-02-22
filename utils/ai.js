@@ -290,7 +290,7 @@ const logEvent = async (billId, eventCase, message) => {
 };
 
 const sendEmailsToClients = async (userId) => {
-  const clients = await Clients.find({ user: userId }).populate("flows");
+  const clients = await Clients.find({ user: userId }).populate("flow");
   console.log("1");
   for (const client of clients) {
     console.log("2");
@@ -303,27 +303,27 @@ const sendEmailsToClients = async (userId) => {
     console.log("3");
 
     console.log(client);
-    console.log(client.flows);
+    console.log(client.flow);
     const flowArray = [
       {
         role: "system",
-        content: client.flows.preCollection,
+        content: client.flow.preCollection,
       },
       {
         role: "system",
-        content: client.flows.paymentConfirmation,
+        content: client.flow.paymentConfirmation,
       },
       {
         role: "system",
-        content: client.flows.paymentConfirmationVerify,
+        content: client.flow.paymentConfirmationVerify,
       },
       {
         role: "system",
-        content: client.flows.paymentDelay,
+        content: client.flow.paymentDelay,
       },
       {
         role: "system",
-        content: client.flows.paymentDelayNewDate,
+        content: client.flow.paymentDelayNewDate,
       },
     ];
 
@@ -364,7 +364,7 @@ const sendEmailsToClients = async (userId) => {
 
           const content = `<html>
           <body>
-          <h1 style="color:blue;">Estimado cliente ${client.contactName} de ${client.clientName}</h1>
+          <h1>Estimado cliente ${client.contactName} de ${client.clientName}</h1>
           <h3>${generatedText}</h3>
           <h3>atentamente</h3>
           </body></html>`;
@@ -394,7 +394,7 @@ const sendEmailsToClients = async (userId) => {
 
 const readEmail = async (email, billId, text) => {
   try {
-    const client = await Clients.findOne({ email }).populate("flows");
+    const client = await Clients.findOne({ email }).populate("flow");
     const bill = await Bills.findOne({ billId, client: client._id });
 
     if (!bill) {
@@ -408,33 +408,6 @@ const readEmail = async (email, billId, text) => {
         content: AI_GENERAL_CONTEXT.BUSSINESS_DEFINITION,
       },
     ];
-    const flowArray = [
-      {
-        role: "system",
-        content: client.flows.preCollection,
-      },
-      {
-        role: "system",
-        content: client.flows.paymentConfirmation,
-      },
-      {
-        role: "system",
-        content: client.flows.paymentConfirmationVerify,
-      },
-      {
-        role: "system",
-        content: client.flows.paymentDelay,
-      },
-      {
-        role: "system",
-        content: client.flows.paymentDelayNewDate,
-      },
-      {
-        role: "system",
-        content: client.flows.collectionIgnored,
-      },
-    ];
-    context.push(flowArray);
 
     const transformedLog = bill.log.map((entry) => {
       return {
@@ -445,19 +418,93 @@ const readEmail = async (email, billId, text) => {
 
     context.push(transformedLog);
 
-    //push a new system message if necesary
-    transformedLog.push({
-      role: "system",
-      content: "Te doy mas contexto",
-    });
+    const intentionContext = [
+      ...context,
+      {
+        role: "system",
+        content: ` You are a debt collector. We have sent a reminder to pay. this is the users response. I need you to respond only the word: one, two, three, four or five, "one" if user has intention to pay on time. "two" if user has paid and sent a confirmation of payment. "three" if user is asking to move payment day. "four" if user is setting a new payment date. "five" if the message has no relation to paying.`,
+      },
+      { role: "user", content: text },
+    ];
 
-    transformedLog.push({
+    const calssifyResponse = await openai.chat.completions.create({
+      messages: intentionContext,
+      model: "gpt-3.5-turbo",
+    });
+    const userIntention = calssifyResponse.choices[0].message.content;
+
+    context.push({
       role: "user",
       content: text,
     });
 
+    const flowArray = [
+      {
+        role: "system",
+        content: client.flow.preCollection,
+      },
+      {
+        role: "system",
+        content: client.flow.paymentConfirmation,
+      },
+      {
+        role: "system",
+        content: client.flow.paymentConfirmationVerify,
+      },
+      {
+        role: "system",
+        content: client.flow.paymentDelay,
+      },
+      {
+        role: "system",
+        content: client.flow.paymentDelayNewDate,
+      },
+      {
+        role: "system",
+        content: client.flow.collectionIgnored,
+      },
+    ];
+
+    //push a new system message if necesary
+    context.push({
+      role: "system",
+      content:
+        "Dada la conversacion anterior, el cliente respondio y su intencion de pago es la siguiente",
+    });
+
+    if (userIntention.toLowerCase() === "one") {
+      //paymentConfirmation
+      context.push({
+        role: "system",
+        content: `El usuario dice que va a pagar a tiempo y ${client.flow.paymentConfirmation}`,
+      });
+    } else if (userIntention.toLowerCase() === "two") {
+      //paymentConfirmationVerify
+      context.push({
+        role: "system",
+        content: `El usuario dice que ya pago y ${client.flow.paymentConfirmationVerify}`,
+      });
+    } else if (userIntention.toLowerCase() === "three") {
+      //paymentDelay
+      context.push({
+        role: "system",
+        content: `El usuario dice que se atraso y ${client.flow.paymentDelay}`,
+      });
+    } else if (userIntention.toLowerCase() === "four") {
+      //paymentDelayNewDate
+      context.push({
+        role: "system",
+        content: `El usuario dice nueva fecha de pago ${client.flow.paymentDelayNewDate}`,
+      });
+    } else if (userIntention.toLowerCase() === "five") {
+      //collectionIgnored
+      context.push({
+        role: "system",
+        content: `El usuario nos ignoro, nos dijo algo que no tiene sentido ${client.flow.collectionIgnored}`,
+      });
+    }
     const openAiResponse = await openai.chat.completions.create({
-      messages: transformedLog,
+      messages: context,
       model: "gpt-3.5-turbo",
     });
     const generatedText = openAiResponse.choices[0].message.content;
@@ -487,7 +534,7 @@ const readEmail = async (email, billId, text) => {
     );
     //send the message back
 
-    return { answer: generatedText };
+    return generatedText;
   } catch (error) {
     console.log(error);
     return;

@@ -231,7 +231,7 @@ exports.getBillsByUserId = (req, res) => {
         date: bill.date,
         amount: bill.amount,
         status: bill.status,
-        creditDays: bill.client.creditDays,
+        creditDays: bill.creditDays,
         clientName: bill.client.clientName,
         clientId: bill.client.clientId,
         client: bill.client._id,

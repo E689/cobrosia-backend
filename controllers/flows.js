@@ -5,14 +5,9 @@ const Flows = require("../models/flows");
 
 exports.createFlow = async (req, res) => {
   try {
-    const createFields = req.body;
-    const { name, userId } = createFields;
-    if (!name || !userId) {
-      return res.status(400).json({
-        message: "Missing parameters. Please enter name, userId.",
-      });
-    }
-    const newFlow = new Flows({ name });
+    const { userId, flow } = req.body;
+
+    const newFlow = new Flows(flow);
     await newFlow.save();
 
     const updatedUser = await updatedUser.findByIdAndUpdate(
@@ -24,8 +19,7 @@ exports.createFlow = async (req, res) => {
     );
 
     return res.status(200).json({
-      message: "Flow updated",
-      user: updatedUser,
+      message: "Flow created",
     });
   } catch (error) {
     return res.status(500).json({

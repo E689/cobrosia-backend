@@ -293,6 +293,9 @@ const sendEmailsToClients = async (userId) => {
   const clients = await Clients.find({ user: userId }).populate("flow");
   console.log("1");
   for (const client of clients) {
+    if (!client.ai) {
+      return;
+    }
     console.log("2");
     const context = [
       {

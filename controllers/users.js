@@ -243,7 +243,7 @@ exports.createUserFromFile = async (req, res) => {
     newUser
       .save()
       .then(async (newUser) => {
-        console.log(`User created ${newUser.name}`);
+        console.log(`User created ${newUser}`);
         const newUsersId = newUser._id;
         const newClients = [];
         const newBills = [];
@@ -339,7 +339,7 @@ exports.createUserFromFile = async (req, res) => {
               `Aqui está tu reporte Cobros AI`
             );
 
-            await exports.updateAllBillsByUser(newUsersId);
+            await exports.internalUpdateBills(newUsersId);
             console.log(`sent email with password : ${tempPassword}`);
             return;
           });
@@ -571,6 +571,11 @@ exports.deleteUser = async (req, res) => {
       .status(500)
       .json({ error, message: "Error deleting user and associated data" });
   }
+};
+
+exports.internalUpdateBills = async (userId) => {
+  await updateUserClientBills(userId);
+  return "all updated";
 };
 
 exports.updateAllBillsByUser = async (req, res) => {

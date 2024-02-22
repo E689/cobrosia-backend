@@ -105,6 +105,7 @@ exports.getClientById = async (req, res) => {
         email: client.email,
         phone: client.phone,
         aIToggle: client.ai,
+        flow: client.flow,
       },
       message: "Client from user retrieved",
     });

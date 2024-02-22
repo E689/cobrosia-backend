@@ -59,5 +59,28 @@ exports.getAllFlowsByUserId = async (req, res) => {
   }
 };
 
-exports.updateFlow = (req, res) => {};
+exports.updateFlow = (req, res) => {
+  try {
+    const flowId = req.params.id;
+    const { flow } = req.body;
+
+    if (!flowId) {
+      return res.status(400).json({
+        message: "Missing clientId parameter",
+      });
+    }
+
+    const updatedFlows = Flows.findByIdAndUpdate(flowId, flow, {
+      new: true,
+    });
+    return res.status(200).json({
+      message: "Flows updated",
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      message: "Error",
+    });
+  }
+};
 exports.deleteFlow = (req, res) => {};

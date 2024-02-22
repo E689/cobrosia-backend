@@ -59,8 +59,9 @@ exports.createUser = (req, res) => {
 exports.getUserById = async (req, res) => {
   try {
     const userId = req.params.id;
+    console.log(userId);
     const user = await Users.findById(userId);
-
+    console.log("user", user);
     return res.status(201).json({ message: "User found", user });
   } catch (error) {
     return res.status(500).json({

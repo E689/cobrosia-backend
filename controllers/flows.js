@@ -6,10 +6,8 @@ const Flows = require("../models/flows");
 exports.createFlow = async (req, res) => {
   try {
     const { userId, flow } = req.body;
-    console.log(userId, flow);
     const newFlow = new Flows(flow);
     await newFlow.save();
-    console.log(newFlow);
     const updatedUser = await Users.findByIdAndUpdate(
       userId,
       { $push: { flows: newFlow._id } },
@@ -22,7 +20,6 @@ exports.createFlow = async (req, res) => {
       message: "Flow created",
     });
   } catch (error) {
-    console.log("el error", error);
     return res.status(500).json({
       error,
       message: "Error",

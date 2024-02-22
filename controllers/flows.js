@@ -59,7 +59,7 @@ exports.getAllFlowsByUserId = async (req, res) => {
   }
 };
 
-exports.updateFlow = (req, res) => {
+exports.updateFlow = async (req, res) => {
   try {
     const flowId = req.params.id;
     const { flow } = req.body;
@@ -70,7 +70,7 @@ exports.updateFlow = (req, res) => {
       });
     }
 
-    const updatedFlows = Flows.findByIdAndUpdate(flowId, flow, {
+    const updatedFlows = await Flows.findByIdAndUpdate(flowId, flow, {
       new: true,
     });
     return res.status(200).json({

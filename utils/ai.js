@@ -398,7 +398,7 @@ const readEmail = async (email, billId, text) => {
   try {
     const client = await Clients.findOne({ email }).populate("flow");
     console.log(client);
-    const bill = await Bills.findOne({ billId, client: client._id });
+    const bill = await Bills.findOne({ billId, client: client.clientId });
 
     if (!bill) {
       console.log("No bill found");

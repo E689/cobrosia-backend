@@ -10,7 +10,6 @@ const {
   sendEmailCloudRegister,
   sendEmailCloud,
   sendEmailSES,
-  emailParams,
 } = require("../utils/email");
 const { LOG_ENTRY_TYPE } = require("../constants");
 const { sendEmailsToClients } = require("../utils/ai");
@@ -329,7 +328,7 @@ exports.createUserFromFile = async (req, res) => {
             );
 
             //await sendEmailCloudRegister(newUser.email, tempPassword);
-            await emailParams(
+            await sendEmailSES(
               newUser.email,
               `<html>
               <body>

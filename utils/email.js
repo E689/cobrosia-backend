@@ -63,7 +63,7 @@ exports.sendEmailSES = async (email, content, subject) => {
   return;
 };
 
-exports.emailParams = (email, content, subject) => {
+const emailParams = (email, content, subject) => {
   return {
     Source: process.env.EMAIL_FROM,
     Destination: {

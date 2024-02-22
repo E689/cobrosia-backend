@@ -29,11 +29,11 @@ exports.readEmail = async (req, res) => {
       {
         role: "system",
         content:
-          "user is sending you an email address and numbers in this string. reply in valid JSON format, with the email and billId with the numbers you find. If you find more than one numnber add them to an array billId:[number1,number2,...]. need to parse it later",
+          "user will send you 2 texts. first is the Subject of an email. extract the number or numbers you find.next he will send you an email reply text I need you to extract the email. respond on this format { email: email, billId : number or numers you find ",
       },
       {
         role: "user",
-        content: req.body.headers.from + req.body.headers.subject,
+        content: `text 1 :${req.body.headers.from} + text 2 :${req.body.headers.subject}`,
       },
     ],
     model: "gpt-3.5-turbo",

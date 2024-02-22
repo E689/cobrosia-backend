@@ -1,5 +1,3 @@
-const mongoose = require("mongoose");
-const { ObjectId } = mongoose.Schema;
 const OpenAI = require("openai");
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_KEY,
@@ -398,10 +396,7 @@ const readEmail = async (email, billId, text) => {
   try {
     const client = await Clients.findOne({ email }).populate("flow");
     console.log(client);
-    const bill = await Bills.findOne({
-      billId,
-      client: new mongoose.Types.ObjectId(client._id),
-    });
+    const bill = await Bills.findOne({ billId, client: client._id });
 
     if (!bill) {
       console.log("No bill found");

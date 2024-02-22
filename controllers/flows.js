@@ -22,6 +22,7 @@ exports.createFlow = async (req, res) => {
       message: "Flow created",
     });
   } catch (error) {
+    console.log("el error", error);
     return res.status(500).json({
       error,
       message: "Error",

@@ -148,6 +148,7 @@ exports.updateClient = async (req, res) => {
               case: updatedClient.ai
                 ? LOG_ENTRY_TYPE.AI_ON
                 : LOG_ENTRY_TYPE.AI_OFF,
+              status: updatedClient.ai ? "Process" : "AIOff",
               role: "system",
               content: `AI turned ${updatedClient.ai ? "on" : "off"}`,
             },

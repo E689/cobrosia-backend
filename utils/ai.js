@@ -485,22 +485,35 @@ const readEmail = async (email, billId, text) => {
       {
         $set: {
           status: userIntention.toLowerCase() === "two" ? "Human" : bill.status,
+          ai: userIntention.toLowerCase() === "two" ? false : bill.status,
         },
         $push: {
-          log: [
-            {
-              date: new Date(),
-              case: LOG_ENTRY_TYPE.MESSAGE_RECEIVED,
-              role: "user",
-              content: `${text}`,
-            },
-            {
-              date: new Date(),
-              case: LOG_ENTRY_TYPE.MESSAGE_SENT,
-              role: "assistant",
-              content: `${generatedText}`,
-            },
-          ],
+          log: {
+            $each: [
+              {
+                date: new Date(),
+                case: LOG_ENTRY_TYPE.MESSAGE_RECEIVED,
+                role: "user",
+                content: `${text}`,
+              },
+              {
+                date: new Date(),
+                case: LOG_ENTRY_TYPE.MESSAGE_SENT,
+                role: "assistant",
+                content: `${generatedText}`,
+              },
+              ...(userIntention.toLowerCase() === "two"
+                ? [
+                    {
+                      date: new Date(),
+                      case: LOG_ENTRY_TYPE.AI_FINISHED,
+                      role: "system",
+                      content: "Human verify",
+                    },
+                  ]
+                : []),
+            ],
+          },
         },
       },
       { new: true }

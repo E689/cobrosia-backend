@@ -483,7 +483,10 @@ const readEmail = async (email, billId, text) => {
     console.log(generatedText);
     //push generatedText to the log
     await Bills.findOneAndUpdate(
-      { _id: bill._id },
+      {
+        _id: bill._id,
+        status: userIntention.toLowerCase() === "two" ? "Human" : bill.status,
+      },
       {
         $push: {
           log: [

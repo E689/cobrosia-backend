@@ -273,6 +273,7 @@ exports.createUserFromFile = async (req, res) => {
                     clientName: row[10],
                     clientId: row[9],
                     user: newUsersId,
+                    flow: "65d8b6ae1d62ea5b242ca245",
                   })
                 );
                 latestClientId = newClients[newClients.length - 1]._id;

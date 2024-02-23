@@ -75,6 +75,7 @@ const updateClientBills = async (clientId) => {
 
 //given the id of the user, update all of the bills
 const updateUserClientBills = async (userId) => {
+  console.log("udate user client bills ", userId);
   const clients = await Clients.find({ user: userId });
 
   for (const client of clients) {

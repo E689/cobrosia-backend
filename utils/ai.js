@@ -481,9 +481,11 @@ const readEmail = async (email, billId, text) => {
     await Bills.findOneAndUpdate(
       {
         _id: bill._id,
-        status: userIntention.toLowerCase() === "two" ? "Human" : bill.status,
       },
       {
+        $set: {
+          status: userIntention.toLowerCase() === "two" ? "Human" : bill.status,
+        },
         $push: {
           log: [
             {

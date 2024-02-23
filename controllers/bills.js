@@ -6,6 +6,8 @@ const xlsx = require("xlsx");
 const { LOG_ENTRY_TYPE } = require("../constants");
 const { countAiOn } = require("../services/bills");
 
+const { internalUpdateBills } = require("./users");
+
 exports.createBill = async (req, res) => {
   const { amount, date, clientId, billId, context, clientName, userId } =
     req.body;
@@ -56,7 +58,8 @@ exports.createBill = async (req, res) => {
 
   newBill
     .save()
-    .then((newBill) => {
+    .then(async (newBill) => {
+      await internalUpdateBills(userId);
       return res.status(200).json({
         message: "bill saved",
       });
@@ -70,7 +73,7 @@ exports.createBill = async (req, res) => {
     });
 };
 
-exports.createBillsFromFile = (req, res) => {
+exports.createBillsFromFile = async (req, res) => {
   try {
     const userId = req.body.userId;
     if (!userId) {
@@ -195,7 +198,7 @@ exports.createBillsFromFile = (req, res) => {
           .catch((err) => console.error("Error saving clients:", err));
 
         // update many bills updateBills
-
+        await internalUpdateBills(userId);
         return;
       });
 

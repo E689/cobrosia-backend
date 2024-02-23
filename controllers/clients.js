@@ -2,6 +2,8 @@ const Clients = require("../models/clients");
 const Bills = require("../models/bills");
 const { updateUserClientBills, countAiOn } = require("../services/bills");
 const { LOG_ENTRY_TYPE } = require("../constants");
+
+const { updateClientBills } = require("../services/bills");
 exports.createClient = (req, res) => {
   const { clientName, userId, contactName, contactLastName, phone, email } =
     req.body;
@@ -117,7 +119,7 @@ exports.getClientById = async (req, res) => {
   }
 };
 
-exports.updateClient = (req, res) => {
+exports.updateClient = async (req, res) => {
   const clientId = req.params.id;
   const updatedFields = req.body;
   const { ai } = updatedFields;
@@ -163,6 +165,8 @@ exports.updateClient = (req, res) => {
           },
         }
       );
+
+  await updateClientBills(clientId);
   Promise.all([updateClientPromise, updateBillsPromise])
     .then(([updatedClient, _]) => {
       if (!updatedClient) {

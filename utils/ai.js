@@ -290,20 +290,19 @@ const logEvent = async (billId, eventCase, message) => {
 };
 
 const sendEmailsToClients = async (userId) => {
-  const clients = await Clients.find({ user: userId }).populate("flow");
-  console.log("1");
+  const clients = await Clients.find({ user: userId })
+    .populate("user")
+    .populate("flow");
   for (const client of clients) {
     if (!client.ai) {
       continue;
     }
-    console.log("2");
     const context = [
       {
         role: "system",
-        content: AI_GENERAL_CONTEXT.BUSSINESS_DEFINITION,
+        content: `${client.user.companyName} ${client.user.businessLogic} ${client.user.assistantContext}`,
       },
     ];
-    console.log("3");
     console.log(client);
     console.log(client.flow);
     const flowArray = [
@@ -328,8 +327,6 @@ const sendEmailsToClients = async (userId) => {
         content: client.flow.paymentDelayNewDate,
       },
     ];
-
-    console.log("4");
     if (client.ai) {
       const bills = await Bills.find({ client: client._id });
       //trabajar en el caso en el que es mas de una factura por cliente
@@ -337,12 +334,9 @@ const sendEmailsToClients = async (userId) => {
 
       // const billIdsString = bills.map((bill) => bill.billId).join(", ");
 
-      console.log("5");
       for (const bill of bills) {
-        console.log("6");
         if (bill.ai) {
           const transformedLog = bill.log.map((entry) => {
-            console.log("7");
             return {
               role: entry.role || "system",
               content: `on ${entry.date} : ${entry.message}`,
@@ -351,16 +345,13 @@ const sendEmailsToClients = async (userId) => {
 
           const billContext = [...context, ...flowArray, ...transformedLog];
 
-          console.log("billContext", billContext);
-
           const openAiResponse = await openai.chat.completions.create({
             messages: billContext,
             model: "gpt-3.5-turbo",
           });
           const generatedText = openAiResponse.choices[0].message.content;
-          console.log("8");
 
-          // cuando sean varias facturas juntas?
+          //cuando sean varias facturas juntas?
           //const subject = `Cobro pendiente facturas : ${billIdsString}`;
           const subject = `Cobro pendiente factura ${bill.billId} `;
 
@@ -370,7 +361,6 @@ const sendEmailsToClients = async (userId) => {
           <h3>${generatedText}</h3>
           <h3>atentamente</h3>
           </body></html>`;
-          console.log("9");
           await sendEmailSES(client.email, content, subject);
           await Bills.findOneAndUpdate(
             { _id: bill._id },
@@ -407,7 +397,7 @@ const readEmail = async (email, billId, text) => {
     const context = [
       {
         role: "system",
-        content: AI_GENERAL_CONTEXT.BUSSINESS_DEFINITION,
+        content: `${client.user.companyName} ${client.user.businessLogic} ${client.user.assistantContext}`,
       },
     ];
 

@@ -11,12 +11,16 @@ const usersSchema = new mongoose.Schema(
     },
     companyName: {
       type: String,
+      default: "nos llamamos Nombre de empresa",
     },
     businessLogic: {
       type: String,
+      default: "El giro de nuestro negocio es cobro",
     },
     assistantContext: {
       type: String,
+      default:
+        "Eres el cobrador te llamas Juan Jose Jaime Alfredo luis y es importante que siempre digas tu nombre completo",
     },
     hashed_password: {
       type: String,

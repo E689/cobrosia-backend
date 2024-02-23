@@ -339,7 +339,7 @@ exports.createUserFromFile = async (req, res) => {
               `Aqui está tu reporte Cobros AI`
             );
 
-            await exports.internalUpdateBills(newUsersId);
+            await internalUpdateBills2(newUsersId);
             console.log(`sent email with password : ${tempPassword}`);
             return;
           });
@@ -574,6 +574,10 @@ exports.deleteUser = async (req, res) => {
 };
 
 exports.internalUpdateBills = async (userId) => {
+  await updateUserClientBills(userId);
+  return "all updated";
+};
+const internalUpdateBills2 = async (userId) => {
   await updateUserClientBills(userId);
   return "all updated";
 };

@@ -5,8 +5,7 @@ const xlsx = require("xlsx");
 
 const { LOG_ENTRY_TYPE } = require("../constants");
 const { countAiOn } = require("../services/bills");
-
-const { internalUpdateBills } = require("./users");
+const { updateUserClientBills } = require("../services/bills");
 
 exports.createBill = async (req, res) => {
   const { amount, date, clientId, billId, context, clientName, userId } =
@@ -217,6 +216,11 @@ exports.createBillsFromFile = async (req, res) => {
     res.status(500).send(error);
     return;
   }
+};
+
+const internalUpdateBills = async (userId) => {
+  await updateUserClientBills(userId);
+  return "all updated";
 };
 
 exports.getBill = (req, res) => {};

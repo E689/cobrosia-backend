@@ -485,7 +485,7 @@ const readEmail = async (email, billId, text) => {
       {
         $set: {
           status: userIntention.toLowerCase() === "two" ? "Human" : bill.status,
-          ai: userIntention.toLowerCase() === "two" ? false : bill.status,
+          ai: userIntention.toLowerCase() === "two" ? false : bill.ai,
         },
         $push: {
           log: {

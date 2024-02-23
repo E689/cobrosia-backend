@@ -120,73 +120,56 @@ exports.getClientById = async (req, res) => {
 };
 
 exports.updateClient = async (req, res) => {
-  const clientId = req.params.id;
-  const updatedFields = req.body;
-  const { ai } = updatedFields;
+  try {
+    const clientId = req.params.id;
+    const updatedFields = req.body;
+    const { ai } = updatedFields;
 
-  if (!clientId) {
-    return res.status(400).json({
-      message: "Missing clientId parameter",
+    if (!clientId) {
+      return res.status(400).json({
+        message: "Missing clientId parameter",
+      });
+    }
+
+    const client = await Clients.findById(clientId);
+    client.set(updatedFields);
+    const updatedClient = await client.save();
+    const aiValueChanged = updatedClient.ai !== client.ai;
+
+    const updateObject = aiValueChanged
+      ? {
+          $set: {
+            status: updatedClient.ai ? "Process" : "AIOff",
+            ai: updatedClient.ai,
+          },
+          $push: {
+            log: {
+              date: new Date(),
+              case: updatedClient.ai
+                ? LOG_ENTRY_TYPE.AI_ON
+                : LOG_ENTRY_TYPE.AI_OFF,
+              role: "system",
+              content: `AI turned ${updatedClient.ai ? "on" : "off"}`,
+            },
+          },
+        }
+      : undefined;
+
+    if (aiValueChanged && updateObject) {
+      await Bills.updateMany({ client: clientId }, updateObject);
+    }
+
+    await updateClientBills(clientId);
+
+    return res.status(200).json({
+      message: "Client updated",
+      updatedClient,
+    });
+  } catch (error) {
+    return res.status(404).json({
+      message: "Error updating client",
     });
   }
-
-  const updateClientPromise = Clients.findByIdAndUpdate(
-    clientId,
-    updatedFields,
-    { new: true }
-  );
-
-  const updateBillsPromise = ai
-    ? Bills.updateMany(
-        { client: clientId },
-        {
-          $set: { status: "Process", ai: true },
-          $push: {
-            log: {
-              date: new Date(),
-              case: LOG_ENTRY_TYPE.AI_ON,
-              role: "system",
-              content: `AI turned on`,
-            },
-          },
-        }
-      )
-    : Bills.updateMany(
-        { client: clientId },
-        {
-          $set: { status: "AIOff", ai: false },
-          $push: {
-            log: {
-              date: new Date(),
-              case: LOG_ENTRY_TYPE.AI_OFF,
-              role: "system",
-              content: `AI turned off`,
-            },
-          },
-        }
-      );
-
-  await updateClientBills(clientId);
-  Promise.all([updateClientPromise, updateBillsPromise])
-    .then(([updatedClient, _]) => {
-      if (!updatedClient) {
-        return res.status(404).json({
-          message: "Client not found",
-        });
-      }
-
-      return res.status(200).json({
-        message: "Client updated",
-        updatedClient,
-      });
-    })
-    .catch((error) => {
-      console.log(error);
-      return res.status(500).json({
-        error,
-        message: "Error updating client",
-      });
-    });
 };
 
 exports.deleteClient = (req, res) => {

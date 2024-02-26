@@ -138,6 +138,7 @@ exports.createBillsFromFile = async (req, res) => {
               clientName: row[10],
               clientId: row[9],
               user: newUsersId,
+              flow: "65d8b6ae1d62ea5b242ca245",
             });
 
             newClients.push(createdClient);

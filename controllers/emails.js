@@ -1,6 +1,7 @@
 const Clients = require("../models/clients");
 const Bills = require("../models/bills");
 const { json } = require("express");
+const Flows = require("../models/flows");
 const {
   logController,
   mensajeController,
@@ -195,6 +196,16 @@ exports.deleteTestChat = async (req, res) => {
   res.status(200).send({ testLog: updatedBill.testLog });
 };
 
+exports.deleteFlowTest = async (req, res) => {
+  const flowId = req.params.id;
+  const updatedFlow = await Flows.findByIdAndUpdate(
+    flowId,
+    { testLog: [] },
+    { new: true }
+  );
+  res.status(200).send({ testLog: updatedFlow.testLog });
+};
+
 exports.getTestChat = async (req, res) => {
   const billId = req.params.id;
   const bill = await Bills.findById({ _id: billId }).populate({
@@ -233,4 +244,136 @@ exports.getTestChat = async (req, res) => {
   }
   const updatedLog = await bill.save();
   res.status(200).send({ testLog: updatedLog.testLog });
+};
+
+exports.getFlowTest = async (req, res) => {
+  const flowId = req.params.id;
+  const flow = await Flows.findById({ _id: flowId });
+
+  if (flow.testLog.length < 1) {
+    const intentionContext = [
+      {
+        role: "system",
+        content: `Eres un recolector de deudas de facturas. El usuario acaba de abrir la pestaña del chat. Saluda.`,
+      },
+    ];
+
+    const response = await openai.chat.completions.create({
+      messages: intentionContext,
+      model: "gpt-3.5-turbo",
+    });
+    const agentGreet = response.choices[0].message.content;
+
+    flow.testLog.push({
+      date: new Date(),
+      case: LOG_ENTRY_TYPE.MESSAGE_SENT,
+      role: "assistant",
+      content: `${agentGreet}`,
+    });
+    const updatedFlow = await flow.save();
+
+    res.status(200).send({ testLog: updatedFlow.testLog });
+  } else {
+    res.status(200).send({ testLog: flow.testLog });
+  }
+};
+
+exports.flowTest = async (req, res) => {
+  try {
+    const flowId = req.body.id;
+    const text = req.body.text;
+
+    const flow = await Flows.findById({ _id: flowId });
+
+    const context = [
+      {
+        role: "system",
+        content: `Eres un cobrador de deudas. Hemos enviado un recordatorio para pagar. esta es la respuesta de los usuarios. Necesito que respondas sólo la palabra: one, two, three, four o five, "one" si el usuario tiene intención de pagar a tiempo. "two" si el usuario ha pagado y enviado una confirmación de pago. "three" si el usuario solicita cambiar el día de pago. "four" si el usuario está configurando una nueva fecha de pago. "five" si el mensaje no tiene relación con el pago.`,
+      },
+    ];
+
+    // const transformedLog = flow.testLog.map((entry) => {
+    //   return {
+    //     role: entry.role,
+    //     content: `${entry.content}`,
+    //   };
+    // });
+
+    // context.push(...transformedLog);
+    context.push({ role: "user", content: text });
+
+    const calssifyResponse = await openai.chat.completions.create({
+      messages: context,
+      model: "gpt-3.5-turbo",
+    });
+    const userIntention = calssifyResponse.choices[0].message.content;
+
+    const replyContext = [
+      {
+        role: "system",
+        content:
+          "soy un agente cobrador. acabo de recibir un mensaje e interprete lo siguiente sobre las respuesta del usuario a un mensaje que le envie.",
+      },
+    ];
+
+    if (userIntention.toLowerCase() === "one") {
+      //paymentConfirmation
+      replyContext.push({
+        role: "system",
+        content: `El usuario dice que va a pagar a tiempo y ${flow.paymentConfirmation}, respondele al cliente, a mi y usa todo el contexto anterior de la conversasion`,
+      });
+    } else if (userIntention.toLowerCase() === "two") {
+      //paymentConfirmationVerify
+      replyContext.push({
+        role: "system",
+        content: `El usuario dice que ya pago y ${flow.paymentConfirmationVerify}, respondele al cliente, a mi y usa todo el contexto anterior de la conversasion`,
+      });
+    } else if (userIntention.toLowerCase() === "three") {
+      //paymentDelay
+      replyContext.push({
+        role: "system",
+        content: `El usuario dice que se atraso y ${flow.paymentDelay}, respondele al cliente, a mi y usa todo el contexto anterior de la conversasion`,
+      });
+    } else if (userIntention.toLowerCase() === "four") {
+      //paymentDelayNewDate
+      replyContext.push({
+        role: "system",
+        content: `El usuario dice nueva fecha de pago ${flow.paymentDelayNewDate}, respondele al cliente, a mi y usa todo el contexto anterior de la conversasion`,
+      });
+    } else if (userIntention.toLowerCase() === "five") {
+      //collectionIgnored
+      replyContext.push({
+        role: "system",
+        content: `El usuario nos ignoro, nos dijo algo que no tiene sentido ${flow.collectionIgnored}, respondele al cliente, a mi y usa todo el contexto anterior de la conversasion`,
+      });
+    }
+    const openAiResponse = await openai.chat.completions.create({
+      messages: replyContext,
+      model: "gpt-3.5-turbo",
+    });
+    const generatedText = openAiResponse.choices[0].message.content;
+
+    console.log(`el caso fue ${userIntention.toLowerCase()}`);
+    console.log(`el context es `, replyContext);
+    console.log(`el respuesta es  fue ${generatedText.toLowerCase()}`);
+    flow.testLog.push(
+      {
+        date: new Date(),
+        case: LOG_ENTRY_TYPE.MESSAGE_RECEIVED,
+        role: "user",
+        content: `${text}`,
+      },
+      {
+        date: new Date(),
+        case: LOG_ENTRY_TYPE.MESSAGE_SENT,
+        role: "assistant",
+        content: `${generatedText}`,
+      }
+    );
+    const updatedLog = await flow.save();
+
+    res.status(200).send({ testLog: updatedLog.testLog });
+  } catch (error) {
+    console.log(error);
+  }
 };

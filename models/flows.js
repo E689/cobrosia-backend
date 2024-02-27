@@ -34,6 +34,7 @@ const flowsSchema = new mongoose.Schema(
       default:
         "si nos ignoro diciendo algo que no tiene relevancia con el cobro. responderle recordandole el cobro con urgencia",
     },
+    testLog: [{ date: Date, case: Number, role: String, content: String }],
   },
   { timestamps: true }
 );

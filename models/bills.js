@@ -42,6 +42,7 @@ const billsSchema = new mongoose.Schema(
       },
     },
     log: [{ date: Date, case: Number, role: String, content: String }],
+    testLog: [{ date: Date, case: Number, role: String, content: String }],
     ai: {
       type: Boolean,
       default: false,

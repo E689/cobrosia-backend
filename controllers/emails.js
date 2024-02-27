@@ -196,7 +196,7 @@ exports.deleteTestChat = async (req, res) => {
 };
 
 exports.getTestChat = async (req, res) => {
-  const billId = req.body.billId;
+  const billId = req.params.id;
   const bill = await Bills.findById({ _id: billId });
 
   res.status(200).send({ testLog: bill.testLog });

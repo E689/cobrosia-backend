@@ -12,7 +12,7 @@ router.post("/read-email", readEmail);
 
 router.post("/chat/test", readTestChat);
 
-router.get("/chat/test", getTestChat);
+router.get("/chat/test/:id", getTestChat);
 
 router.delete("/chat/test", deleteTestChat);
 

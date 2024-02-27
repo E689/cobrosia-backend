@@ -197,7 +197,40 @@ exports.deleteTestChat = async (req, res) => {
 
 exports.getTestChat = async (req, res) => {
   const billId = req.params.id;
-  const bill = await Bills.findById({ _id: billId });
+  const bill = await Bills.findById({ _id: billId }).populate({
+    path: "client",
+    populate: [{ path: "flow" }, { path: "user" }],
+  });
 
-  res.status(200).send({ testLog: bill.testLog });
+  const context = [
+    {
+      role: "system",
+      content: `${bill.client.user.companyName} ${bill.client.user.businessLogic} ${bill.client.user.assistantContext}`,
+    },
+  ];
+
+  if (bill.testLog.length < 1) {
+    const intentionContext = [
+      ...context,
+      {
+        role: "system",
+        content: `You are a debt collector. given the context of the bill send a message to the client`,
+      },
+    ];
+
+    const agentMessage = await openai.chat.completions.create({
+      messages: intentionContext,
+      model: "gpt-3.5-turbo",
+    });
+    const agent = agentMessage.choices[0].message.content;
+
+    bill.testLog.push({
+      date: new Date(),
+      case: LOG_ENTRY_TYPE.MESSAGE_SENT,
+      role: "assistant",
+      content: `${agent}`,
+    });
+  }
+  const updatedLog = await bill.save();
+  res.status(200).send({ testLog: updatedLog.testLog });
 };

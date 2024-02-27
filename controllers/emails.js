@@ -181,7 +181,7 @@ exports.readTestChat = async (req, res) => {
 
   const updatedLog = await bill.save();
 
-  res.status(200).send(updatedLog.testLog);
+  res.status(200).send({ testLog: updatedLog.testLog });
   // guardarlo en un test chat que cuando el user lo reinicia lo borro.
 };
 
@@ -192,5 +192,12 @@ exports.deleteTestChat = async (req, res) => {
     { testLog: [] },
     { new: true }
   );
-  res.status(200).send(updatedBill.testLog);
+  res.status(200).send({ testLog: updatedBill.testLog });
+};
+
+exports.getTestChat = async (req, res) => {
+  const billId = req.body.billId;
+  const bill = await Bills.findById({ _id: billId });
+
+  res.status(200).send({ testLog: bill.testLog });
 };
